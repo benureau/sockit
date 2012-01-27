@@ -10,12 +10,12 @@ public class Message {
 	private int type = 0;
 	// content of the message
 	private byte[] content;
-	//number of bytes of the content
+	//number of bytes of the message (header + content)
 	private int length = HEADER_SIZE;
 	// cursor for reading/writing
 	private int cursor = 0;
 	// header size
-	public static int HEADER_SIZE = 8;// A DISPARAITRE
+	public static int HEADER_SIZE = 8;
 	// default size of the content
 	private static int BUFFER_SIZE = 256;
 
