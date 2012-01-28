@@ -10,7 +10,7 @@ public class Message {
 	private int type = 0;
 	// content of the message
 	private byte[] content;
-	//number of bytes of the message (header + content)
+	//number of bytes of the message (header + conten)
 	private int length = HEADER_SIZE;
 	// cursor for reading/writing
 	private int cursor = 0;
@@ -168,7 +168,6 @@ public class Message {
 	public String readString() {
 		String s = Utils.readString(content, cursor);
 		cursor = cursor + Utils.INT_SIZE + s.getBytes().length;
-		this.length = this.length + Utils.INT_SIZE + s.getBytes().length;
 		return s;
 	}
 
@@ -243,11 +242,13 @@ public class Message {
 		// string test
 		for(int i = 0 ; i < num_it ; i++){
 			message.appendString(String.valueOf(i) + "azertyuiopqsdfghjklmwxcvbn");
+		    //FIXME check content length
 		}
 		message.resetCursor();
 		for(int i = 0 ; i < num_it ; i++){
 			String r = message.readString();
 			String t = String.valueOf(i) + "azertyuiopqsdfghjklmwxcvbn";
+		    //FIXME check content length
 			if(r.compareTo(t) != 0){
 				System.out.println(r + " versus " + String.valueOf(i) + "azertyuiopqsdfghjklmwxcvbn");
 				System.out.println("Error : message.read/appendString");
