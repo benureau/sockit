@@ -92,7 +92,8 @@ public class Message {
 	private void checkForFreeSpace(int size) {
 		int free = (int) (this.content.length - (this.length - HEADER_SIZE));
 		if(free < size){
-			byte[] newData = new byte[(int) (this.content.length + (size - free))];
+    		int new_size = 256*(((int) this.content.length + (size - free)/256) + 1);
+			byte[] newData = new byte[(int) new_size];
 			System.arraycopy(this.content, 0, newData, 0, (int) this.content.length);
 			this.content = newData;
 		}
