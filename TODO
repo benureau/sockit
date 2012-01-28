@@ -1,0 +1,2 @@
+Use Stringbuffer rather than array[bytes] in Message class.
+Reimplement message class using standart classes DataInput, DataOuput.

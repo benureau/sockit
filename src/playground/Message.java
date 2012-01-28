@@ -90,10 +90,10 @@ public class Message {
 	 *        able to receive.
 	 */
 	private void checkForFreeSpace(int size) {
-		int free = (int) (this.content.length - cursor);
+		int free = (int) (this.content.length - (this.length - HEADER_SIZE));
 		if(free < size){
 			byte[] newData = new byte[(int) (this.content.length + (size - free))];
-			System.arraycopy(this.content, 0, newData, 0, (int) length);
+			System.arraycopy(this.content, 0, newData, 0, (int) this.content.length);
 			this.content = newData;
 		}
 	}
@@ -104,8 +104,7 @@ public class Message {
 	 */
 	public void appendBoolean(boolean b) {
 		checkForFreeSpace(Utils.BOOLEAN_SIZE);
-		Utils.writeBoolean(b, content, cursor);
-		cursor = cursor + Utils.BOOLEAN_SIZE;
+		Utils.writeBoolean(b, content, this.length-HEADER_SIZE);
 		this.length = this.length + Utils.BOOLEAN_SIZE;
 	}
 
@@ -125,8 +124,7 @@ public class Message {
 	 */
 	public void appendInt(int i) {
 		checkForFreeSpace(Utils.INT_SIZE);
-		Utils.writeInt(i, content, cursor);
-		cursor = cursor + Utils.INT_SIZE;
+		Utils.writeInt(i, content, this.length-HEADER_SIZE);
 		this.length = this.length + Utils.INT_SIZE;
 	}
 
@@ -146,8 +144,7 @@ public class Message {
 	 */
 	public void appendFloat(float f) {
 		checkForFreeSpace(Utils.FLOAT_SIZE);
-		Utils.writeFloat(f, content, cursor);
-		cursor = cursor + Utils.FLOAT_SIZE;
+		Utils.writeFloat(f, content, this.length-HEADER_SIZE);
 		this.length = this.length + Utils.FLOAT_SIZE;
 	}
 
@@ -161,6 +158,16 @@ public class Message {
 		return f;
 	}
 
+    /**
+	 * Put a string in the content of the message
+	 * @param s the string to put in the message
+	 */
+	public void appendString(String s) {
+		checkForFreeSpace(s.getBytes().length + Utils.INT_SIZE);
+		Utils.writeString(s, content, this.length-HEADER_SIZE);
+		this.length = this.length + s.getBytes().length + Utils.INT_SIZE;
+	}
+
 	/**
 	 * Reads a string in the content of the message
 	 * @return the string read
@@ -172,56 +179,57 @@ public class Message {
 	}
 
 	/**
-	 * Put a string in the content of the message
-	 * @param s the string to put in the message
-	 */
-	public void appendString(String s) {
-		checkForFreeSpace(s.getBytes().length + Utils.INT_SIZE);
-		Utils.writeString(s, content, cursor);
-		cursor = cursor + s.getBytes().length + Utils.INT_SIZE;
-		this.length = this.length + s.getBytes().length + Utils.INT_SIZE;
-	}
-
-	/**
 	 * Just a little test for the message class
 	 */
 	public static void test(){
 		int num_it = 1024;
-		Message message = new Message();
+		Message message;
 
-		// int test
-		for(int i = 0 ; i < num_it ; i++){
+        // int test
+		message = new Message();
+        for(int i = 0 ; i < num_it ; i++){
 			message.appendInt(i);
+			if (message.getLength() != HEADER_SIZE + (i+1)*Utils.INT_SIZE) {
+    			System.out.println("Size is : " + message.getLength() + " but should be " + (HEADER_SIZE + (i+1)*Utils.INT_SIZE));
+    			System.out.println("Error : message.read/appendInt");
+				System.exit(0);
+			}
 		}
 		message.resetCursor();
 		for(int i = 0 ; i < num_it ; i++){
 			int r = message.readInt();
 			if(r != i){
-				System.out.println(String.valueOf(r) + " versus " + String.valueOf(i));
-				System.out.println("Error : message.read/appendInt");
+				System.out.println("i = " + i + ", cursor = " + message.cursor + ", " + String.valueOf(r) + " versus " + String.valueOf(i));
+				System.out.println("Error : message.read/readInt");
 				System.exit(0);
 			}
 		}
 		System.out.println("OK : message.read/appendInt");
-		message.resetCursor();
+
 
 		// float test
+	    message = new Message();
 		for(int i = 0 ; i < num_it ; i++){
 			message.appendFloat(((float) i) / ((float) 128.789456));
+    		if (message.getLength() != HEADER_SIZE + (i+1)*Utils.FLOAT_SIZE) {
+    		    System.out.println("Size is : " + message.getLength() + " but should be " + (HEADER_SIZE + (i+1)*Utils.FLOAT_SIZE));
+    		    System.out.println("Error : message.read/appendFloat");
+			    System.exit(0);
+			}
 		}
 		message.resetCursor();
 		for(int i = 0 ; i < num_it ; i++){
 			float r = message.readFloat();
 			if(r != ((float) i) / ((float) 128.789456)){
-				System.out.println(String.valueOf(r) + " versus " + String.valueOf(((float) i) / ((float) 128.789456)));
+				System.out.println("i = " + i + ", " + String.valueOf(r) + " versus " + String.valueOf(((float) i) / ((float) 128.789456)));
 				System.out.println("Error : message.read/appendFloat");
 				System.exit(0);
 			}
 		}
 		System.out.println("OK : message.read/appendFloat");
-		message.resetCursor();
 
 		// boolean test
+	    message = new Message();
 		for(int i = 0 ; i < num_it ; i++){
 			message.appendBoolean(i % 2 == 0 ? true : false);
 		}
@@ -235,11 +243,9 @@ public class Message {
 			}
 		}
 		System.out.println("OK : message.read/appendBoolean");
-		message.resetCursor();
-		
-		message = new Message();
 		
 		// string test
+	    message = new Message();
 		for(int i = 0 ; i < num_it ; i++){
 			message.appendString(String.valueOf(i) + "azertyuiopqsdfghjklmwxcvbn");
 		    //FIXME check content length
@@ -256,12 +262,11 @@ public class Message {
 			}
 		}
 		System.out.println("OK : message.read/appendString");
-		message.resetCursor();
-
-		message = new Message();
+		
 		
 		// mixed
-		for(int j = 0 ; j < 1024 ; j++){
+		message = new Message();
+        for(int j = 0 ; j < 1024 ; j++){
 			message.resetCursor();
 			message.appendInt(8848);
 			message.appendBoolean(true);
