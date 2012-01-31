@@ -1,2 +1,11 @@
+Improvement :
 Use Stringbuffer rather than array[bytes] in Message class.
 Reimplement message class using standart classes DataInput, DataOuput.
+
+Features :
+Add Double and Long support to Message
+Generate Documentation
+Provide a short example using a python client.
+
+Testing :
+Provide a test for compatibility between a Java server and a Python client.
