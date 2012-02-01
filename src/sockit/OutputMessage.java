@@ -20,6 +20,16 @@ public class OutputMessage {
 		content = new ByteArrayOutputStream();
 		dout = new DataOutputStream(content);
 	}
+	
+	/**
+	 * Constructs a message with a specified type
+	 * @param type the type of the message
+	 */
+	public OutputMessage(int type) {
+		content = new ByteArrayOutputStream();
+		dout = new DataOutputStream(content);
+		this.type = type;
+	}
 
 	/**
 	 * Gets the type of the message
@@ -44,6 +54,8 @@ public class OutputMessage {
 	public byte[] getBytes(){
 		byte[] header = getHeaderAsByteArray();
 		byte[] content = getContentAsByteArray();
+		if(content == null)
+			return null;
 		byte[] message = new byte[header.length + content.length];
 		System.arraycopy(header, 0, message, 0, header.length);
 		System.arraycopy(message, 0, message, header.length, content.length);
@@ -61,6 +73,8 @@ public class OutputMessage {
 			dheader.write(type);
 			int header_size = dheader.size() * 2;
 			dheader.write(content.size() + header_size);
+			// very important
+			dheader.flush();
 			return header.toByteArray();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -73,6 +87,85 @@ public class OutputMessage {
 	 * @return
 	 */
 	private byte[] getContentAsByteArray(){
-		return content.toByteArray();
+		try {
+			content.flush();
+			return content.toByteArray();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	/**
+	 * Writes a Boolean in the message content
+	 * @param b the boolean to write
+	 */
+	void writeBoolean(Boolean b){
+		try {
+			dout.writeBoolean(b);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Write a string in the message content as a sequence of characters
+	 * @param s the string to write
+	 */
+	void writeChars(String s){
+		try {
+			dout.writeChars(s);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Write a double in the message content
+	 * @param d the double to write
+	 */
+	void writeDouble(double d){
+		try {
+			dout.writeDouble(d);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Write a float in the content of the message
+	 * @param f the float to write
+	 */
+	void writeFloat(float f){
+		try {
+			dout.writeFloat(f);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Writes an int in the message content
+	 * @param i the it to write
+	 */
+	void writeInt(int i){
+		try {
+			dout.writeInt(i);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Writes a long in the message content
+	 * @param l the long to write
+	 */
+	void writeLong(long l){
+		try {
+			dout.writeLong(l);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
