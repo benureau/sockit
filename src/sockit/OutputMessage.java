@@ -19,7 +19,7 @@ public class OutputMessage {
 	public OutputMessage() {
 		content = new ByteArrayOutputStream();
 		dout = new DataOutputStream(content);
-	}
+	}	
 	
 	/**
 	 * Constructs a message with a specified type
@@ -53,6 +53,8 @@ public class OutputMessage {
 	 */
 	public byte[] getBytes(){
 		byte[] header = getHeaderAsByteArray();
+		if(header == null)
+			return null;
 		byte[] content = getContentAsByteArray();
 		if(content == null)
 			return null;
@@ -104,6 +106,7 @@ public class OutputMessage {
 	void writeBoolean(Boolean b){
 		try {
 			dout.writeBoolean(b);
+			dout.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -116,6 +119,7 @@ public class OutputMessage {
 	void writeChars(String s){
 		try {
 			dout.writeChars(s);
+			dout.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -128,6 +132,7 @@ public class OutputMessage {
 	void writeDouble(double d){
 		try {
 			dout.writeDouble(d);
+			dout.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -140,6 +145,7 @@ public class OutputMessage {
 	void writeFloat(float f){
 		try {
 			dout.writeFloat(f);
+			dout.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -152,6 +158,7 @@ public class OutputMessage {
 	void writeInt(int i){
 		try {
 			dout.writeInt(i);
+			dout.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -164,8 +171,25 @@ public class OutputMessage {
 	void writeLong(long l){
 		try {
 			dout.writeLong(l);
+			dout.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * Just a simple test
+	 */
+	public static void test(){
+		OutputMessage m = new OutputMessage();
+		m.setType(126);
+		m.writeInt(25);
+		m.writeBoolean(true);
+		m.writeDouble(5.5);
+		m.writeFloat((float) 9.8);
+		m.writeLong(798);
+		m.writeChars("hello !");
+		byte[] mb = m.getBytes();
+		System.out.println("Message size is " + mb.length);
 	}
 }
