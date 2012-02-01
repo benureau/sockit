@@ -1,4 +1,4 @@
-package playground;
+package sockit;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,7 +7,7 @@ import java.net.Socket;
 import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantLock;
 
-import playground.utils.Utils;
+import sockit.utils.Utils;
 
 
 public class Client {

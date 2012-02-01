@@ -1,4 +1,4 @@
-package playground;
+package sockit;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
 
-import playground.utils.Utils;
+import sockit.utils.Utils;
 
 
 public class Server {

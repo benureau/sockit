@@ -34,7 +34,6 @@ public class Example {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
 	}
 	
 	// server code

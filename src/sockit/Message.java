@@ -1,6 +1,6 @@
-package playground;
+package sockit;
 
-import playground.utils.Utils;
+import sockit.utils.Utils;
 
 public class Message {
 

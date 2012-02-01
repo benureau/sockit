@@ -1,6 +1,6 @@
-import playground.Client;
-import playground.Message;
-import playground.Server;
+import sockit.Client;
+import sockit.Message;
+import sockit.Server;
 
 
 public class Example {
