@@ -10,12 +10,15 @@ library: src/sockit/Server.java src/sockit/Message.java src/sockit/Client.java s
 sockit.jar: library
 	jar -cf build/sockit.jar build/sockit/
 
-Example: sockit.jar
-	javac src/Example.java -cp buid/sockit.jar -d build/
-	java build/Example
+Example: library
+	javac src/Example.java -cp build/ -d build/
+	cd build; java Example
 	
-playjar: src/sockit/
-	ls
-	
+Test: library
+	javac src/Test.java -cp build/ -d build/
+	cd build; java Test
+		
 FibServer:
-	ls
+	javac pyclient/test/FibServer.java -cp build/ -d build/
+	cd build; java FibServer
+	
