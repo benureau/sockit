@@ -1,4 +1,4 @@
-package playground.utils;
+package sockit.utils;
 
 public class Utils {
 	
