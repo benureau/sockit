@@ -1,13 +1,15 @@
 # Test if the Python client is compatible with the Java server
 
+from __future__ import print_function, division
 import sys, os
 sys.path += [os.path.join(os.path.dirname(__file__), '../')]
 
 import client
+from msg import Message
 
 # Socket adress
 PORT = 1984
-IP = "127.0.0.1"
+IP = '127.0.0.1'
 
 # Protocol
 HELLO_TYPE = 0
@@ -17,8 +19,8 @@ FIBO_TYPE  = 2
 
 def clientTest():
     
-    c = Client()
-    b = c.connect(PORT, IP)
+    c = client.Client()
+    b = c.connect(IP, PORT)
     
     if b:
         print("CLIENT -> started")
@@ -32,19 +34,19 @@ def clientTest():
             f = Message()
             f.type = FIBO_TYPE
             f.appendInt(i)
-			print("CLIENT -> asking for fibo(" + i + ")"
+            print("CLIENT -> asking for fibo(", i ,")")
             a = c.sendAndReceive(f)
-            if not a is None:
+            if a is not None:
                 if a.type == FIBO_TYPE:
-                    print("CLIENT -> fibo(" + i + ") = " + a.readInt())
+                    print("CLIENT -> fibo(", i, ") = ", a.readInt())
                 else:
                     print("CLIENT -> error in protocol")
                     c.disconnect()
                     break
             else:
-				print("CLIENT -> error in exchange")
-				c.disconnect()
-				break
+                print("CLIENT -> error in exchange")
+                c.disconnect()
+                break
         bye = Message()
         bye.type = BYE_TYPE
         bye.appendString("Bye Server !")

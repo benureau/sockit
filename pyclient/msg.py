@@ -37,7 +37,7 @@ class Message(object):
         
     def getBytes(self):
         """Return a copy of the header + content of the message"""
-        header  = self.headerStruct.pack(self.length, self.type)
+        header  = headerStruct.pack(self.length, self.type)
         return header + ''.join(self.contentList)
         
     def checkForFreeSpace(self, size):

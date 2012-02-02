@@ -1,9 +1,9 @@
 
-import playground.Client;
-import playground.Message;
-import playground.Server;
+import sockit.Client;
+import sockit.Message;
+import sockit.Server;
 
-public class Example {
+public class FibServer {
 	
 	// the port number to use
 	public static final int PORT  = 1984;
@@ -24,8 +24,7 @@ public class Example {
 	
 	// the main function wich launch the server and the client and waits for the end of both
 	public static void main(String[] args) {
-		Example e = new Example();
-		ClientThread c = e.new ClientThread();
+		FibServer e = new FibServer();
 		ServerThread s = e.new ServerThread();
 		s.start();
 		try {
@@ -47,6 +46,7 @@ public class Example {
 			int n = s.getNumberOfMessages();
 			if(n > 0){
 				Message in = s.receive();
+				System.out.println("SERVER -> received a message !");
 				int type = in.getType();
 				switch(type){
 				case HELLO_TYPE:
@@ -82,6 +82,10 @@ public class Example {
 						}
 						break;
 					}
+				default:
+					System.out.println("SERVER -> type of message not recognized");
+					run = false;
+					break;
 				}
 			}
 		}

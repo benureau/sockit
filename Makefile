@@ -6,9 +6,19 @@ clean:
 library: src/sockit/Server.java src/sockit/Message.java src/sockit/Client.java src/sockit/utils/Utils.java
 	rm -Rf build/sockit/
 	javac src/sockit/*.java src/sockit/*/*.java -d build/
+
+sockit.jar: library
+	jar -cf build/sockit.jar build/sockit/
+
+Example: library
+	javac src/Example.java -cp build/ -d build/
+	cd build; java Example
 	
-playjar: src/sockit/
-	ls
-	
+Test: library
+	javac src/Test.java -cp build/ -d build/
+	cd build; java Test
+		
 FibServer:
-	ls
+	javac pyclient/test/FibServer.java -cp build/ -d build/
+	cd build; java FibServer
+	
