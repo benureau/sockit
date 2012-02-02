@@ -1,5 +1,7 @@
 package sockit;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -61,7 +63,7 @@ public class Server {
 	 * @param message the message to send
 	 * @return true if the message is sent, false otherwise
 	 */
-	public boolean send(Message message) {
+	public boolean send(OutputMessage message) {
 		this.lock.lock();
 		if(this.thread == null){
 			this.lock.unlock();
@@ -76,13 +78,13 @@ public class Server {
 	 * Returns a message received. If no message are received in background, the method wait for a new one...
 	 * @return the message received or null
 	 */
-	public Message receive() {
+	public InputMessage receive() {
 		this.lock.lock();
 		if(this.thread == null){
 			this.lock.unlock();
 			return null;
 		}
-		Message r = this.thread.receive();
+		InputMessage r = this.thread.receive();
 		this.lock.unlock();
 		return r;
 	}
@@ -117,7 +119,7 @@ public class Server {
 		// lock to protect the queue containing messages received
 		private ReentrantLock queueLock = null;
 		// the queue containing received message
-		private Vector<Message> queue;
+		private Vector<InputMessage> queue;
 		// input and output stream
 		private InputStream in = null;
 		private OutputStream out = null;
@@ -128,14 +130,14 @@ public class Server {
 		public ServerThread(int port){
 			this.port = port;
 			this.queueLock = new ReentrantLock();
-			this.queue = new Vector<Message>();
+			this.queue = new Vector<InputMessage>();
 		}
 		
 		/**
 		 * Extract the first message in the queue
 		 * @return the message or null if the queue is empty
 		 */
-		public Message receive() {
+		public InputMessage receive() {
 			if(isReady == false)
 				return null;
 			this.queueLock.lock();
@@ -145,7 +147,7 @@ public class Server {
 				return null;
 			}
 			else{
-				Message answer = this.queue.firstElement();
+				InputMessage answer = this.queue.firstElement();
 				this.queue.remove(0);
 				this.queueLock.unlock();
 				return answer;
@@ -168,11 +170,11 @@ public class Server {
 		 * @param message the message to send
 		 * @return
 		 */
-		public boolean send(Message message) {
+		public boolean send(OutputMessage message) {
 			if(isReady == false)
 				return false;
 			try {
-				out.write(message.getBytes(), 0, (int) message.getLength());
+				out.write(message.getBytes(), 0, (int) message.getBytes().length);
 				out.flush();
 				return true;
 			} catch (IOException e) {
@@ -207,15 +209,17 @@ public class Server {
 				this.isReady = true;
 				boolean running = true;
 				while(running){
-					byte[] header = new byte[Message.HEADER_SIZE];
-					int len = in.read(header, 0, Message.HEADER_SIZE);
-					if(len == Message.HEADER_SIZE){
-						int length = Utils.readInt(header, 0);
-						int type = Utils.readInt(header, Utils.INT_SIZE);
-						byte[] content = new byte[length - Message.HEADER_SIZE];
-						len = in.read(content, 0, length - Message.HEADER_SIZE);
-						if(len == length - Message.HEADER_SIZE){
-							Message message = new Message(type, length, content);
+					byte[] header = new byte[InputMessage.HEADER_SIZE];
+					int len = in.read(header, 0, InputMessage.HEADER_SIZE);
+					if(len == InputMessage.HEADER_SIZE){
+						ByteArrayInputStream bis = new ByteArrayInputStream(header);
+						DataInputStream dis = new DataInputStream(bis);
+						int length = dis.readInt();
+						int type = dis.readInt();
+						byte[] content = new byte[length - InputMessage.HEADER_SIZE];
+						len = in.read(content, 0, length - InputMessage.HEADER_SIZE);
+						if(len == length - InputMessage.HEADER_SIZE){
+							InputMessage message = new InputMessage(type,content);
 							this.queueLock.lock();
 							this.queue.add(message);
 							this.queueLock.unlock();
