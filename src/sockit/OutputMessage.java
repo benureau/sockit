@@ -12,6 +12,8 @@ public class OutputMessage {
 	private ByteArrayOutputStream content;
 	// DataInputstream used to write data using a machine-independent way
 	private DataOutputStream dout;
+	// header size
+	public static int HEADER_SIZE = 8;
 
 	/**
 	 * Constructs an empty non specified message
@@ -60,7 +62,7 @@ public class OutputMessage {
 			return null;
 		byte[] message = new byte[header.length + content.length];
 		System.arraycopy(header, 0, message, 0, header.length);
-		System.arraycopy(message, 0, message, header.length, content.length);
+		System.arraycopy(content, 0, message, header.length, content.length);
 		return message;
 	}
 	
@@ -72,9 +74,8 @@ public class OutputMessage {
 		ByteArrayOutputStream header = new ByteArrayOutputStream();
 		DataOutputStream dheader = new DataOutputStream(header);
 		try {
-			dheader.write(type);
-			int header_size = dheader.size() * 2;
-			dheader.write(content.size() + header_size);
+			dheader.writeInt(InputMessage.HEADER_SIZE + this.content.size());
+			dheader.writeInt(type);
 			// very important
 			dheader.flush();
 			return header.toByteArray();
@@ -103,7 +104,7 @@ public class OutputMessage {
 	 * Writes a Boolean in the message content
 	 * @param b the boolean to write
 	 */
-	void writeBoolean(Boolean b){
+	public void appendBoolean(Boolean b){
 		try {
 			dout.writeBoolean(b);
 			dout.flush();
@@ -116,9 +117,9 @@ public class OutputMessage {
 	 * Write a string in the message content as a sequence of characters
 	 * @param s the string to write
 	 */
-	void writeChars(String s){
+	public void appendString(String s){
 		try {
-			dout.writeChars(s);
+			dout.writeUTF(s);
 			dout.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -129,7 +130,7 @@ public class OutputMessage {
 	 * Write a double in the message content
 	 * @param d the double to write
 	 */
-	void writeDouble(double d){
+	public void appendDouble(double d){
 		try {
 			dout.writeDouble(d);
 			dout.flush();
@@ -142,7 +143,7 @@ public class OutputMessage {
 	 * Write a float in the content of the message
 	 * @param f the float to write
 	 */
-	void writeFloat(float f){
+	public void appendFloat(float f){
 		try {
 			dout.writeFloat(f);
 			dout.flush();
@@ -155,7 +156,7 @@ public class OutputMessage {
 	 * Writes an int in the message content
 	 * @param i the it to write
 	 */
-	void writeInt(int i){
+	public void appendInt(int i){
 		try {
 			dout.writeInt(i);
 			dout.flush();
@@ -168,28 +169,12 @@ public class OutputMessage {
 	 * Writes a long in the message content
 	 * @param l the long to write
 	 */
-	void writeLong(long l){
+	public void appendLong(long l){
 		try {
 			dout.writeLong(l);
 			dout.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	/**
-	 * Just a simple test
-	 */
-	public static void test(){
-		OutputMessage m = new OutputMessage();
-		m.setType(126);
-		m.writeInt(25);
-		m.writeBoolean(true);
-		m.writeDouble(5.5);
-		m.writeFloat((float) 9.8);
-		m.writeLong(798);
-		m.writeChars("hello !");
-		byte[] mb = m.getBytes();
-		System.out.println("Message size is " + mb.length);
 	}
 }

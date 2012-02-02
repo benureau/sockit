@@ -1,5 +1,7 @@
 package sockit;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -106,7 +108,7 @@ public class Client {
 	 * @param message the message to send
 	 * @return true if the message is sent, false otherwise. If an error occurs during, the socket will be closed.
 	 */
-	public boolean send(Message message) {
+	public boolean send(OutputMessage message) {
 		this.socketLock.lock();
 		boolean ret = this.unprotectedSend(message);
 		if(ret == false)
@@ -120,8 +122,8 @@ public class Client {
 	 * @param message the message to send
 	 * @return the answer message received
 	 */
-	public Message sendAndReceive(Message message) {
-		Message answer = null;
+	public InputMessage sendAndReceive(OutputMessage message) {
+		InputMessage answer = null;
 		this.socketLock.lock();
 		if(this.unprotectedSend(message) == true){
 			answer = this.unprotectedReceive();
@@ -137,10 +139,11 @@ public class Client {
 	 * @param message to send
 	 * @return true or false if send fails
 	 */
-	private boolean unprotectedSend(Message message){
+	private boolean unprotectedSend(OutputMessage message){
 		if(isConnected){
 			try {
-				out.write(message.getBytes(), 0, (int) message.getLength());
+				System.out.println("J'envoie " + message.getBytes().length + " bytes");
+				out.write(message.getBytes(), 0, (int) message.getBytes().length);
 				out.flush();
 				return true;
 			} catch (IOException e) {
@@ -154,20 +157,22 @@ public class Client {
 	 * Receive a message without controlling if the socket is already used
 	 * @return the message received or null
 	 */
-	private Message unprotectedReceive(){
+	private InputMessage unprotectedReceive(){
 		if(isConnected == true){
 			try{
-				byte[] header = new byte[Message.HEADER_SIZE];
-				int len = in.read(header, 0, Message.HEADER_SIZE);
-				if(len != Message.HEADER_SIZE)
+				byte[] header = new byte[InputMessage.HEADER_SIZE];
+				int len = in.read(header, 0, InputMessage.HEADER_SIZE);
+				if(len != InputMessage.HEADER_SIZE)
 					return null;
-				int length = Utils.readInt(header, 0);
-				int type = Utils.readInt(header, Utils.INT_SIZE);
-				byte[] content = new byte[length - Message.HEADER_SIZE];
-				len = in.read(content, 0, length - Message.HEADER_SIZE);
-				if(len != length - Message.HEADER_SIZE)
+				ByteArrayInputStream bis = new ByteArrayInputStream(header);
+				DataInputStream dis = new DataInputStream(bis);
+				int length = dis.readInt();
+				int type = dis.readInt();
+				byte[] content = new byte[length - InputMessage.HEADER_SIZE];
+				len = in.read(content, 0, length - InputMessage.HEADER_SIZE);
+				if(len != length - InputMessage.HEADER_SIZE)
 					return null;
-				Message message = new Message(type, length, content);
+				InputMessage message = new InputMessage(type, content);
 				return message;
 			}catch(IOException e) {
 				e.printStackTrace();
