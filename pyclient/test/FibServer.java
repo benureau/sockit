@@ -1,7 +1,9 @@
+import java.io.IOException;
 
-import sockit.Client;
-import sockit.Message;
+import sockit.InputMessage;
+import sockit.OutputMessage;
 import sockit.Server;
+
 
 public class FibServer {
 	
@@ -45,36 +47,52 @@ public class FibServer {
 		while(run == true){
 			int n = s.getNumberOfMessages();
 			if(n > 0){
-				Message in = s.receive();
-				System.out.println("SERVER -> received a message !");
+				InputMessage in = s.receive();
 				int type = in.getType();
 				switch(type){
 				case HELLO_TYPE:
 					{
-						System.out.println("SERVER -> receives : " + in.readString());
-						count = true;
+						try {
+							System.out.println("SERVER -> receives : " + in.readString());
+							count = true;
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 						break;
 					}
 				case BYE_TYPE:
 					{
-						System.out.println("SERVER -> receives : " + in.readString());
-						Message a = new Message();
-						a.setType(BYE_TYPE);
-						s.send(a);
-						count = false;
-						run = false;
+						try {
+							System.out.println("SERVER -> receives : " + in.readString());
+							OutputMessage a = new OutputMessage();
+							a.setType(BYE_TYPE);
+							s.send(a);
+							count = false;
+							run = false;
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 						break;
 					}
 				case FIBO_TYPE:
 					{
 						if(count == true){
-							int f = in.readInt();
-							System.out.println("SERVER -> computes fibo(" + f + ")");
-							int t = fibo(f);
-							Message a = new Message();
-							a.setType(FIBO_TYPE);
-							a.appendInt(t);
-							s.send(a);
+							int f;
+							try {
+								f = in.readInt();
+								System.out.println("SERVER -> computes fibo(" + f + ")");
+								int t = fibo(f);
+								OutputMessage a = new OutputMessage();
+								a.setType(FIBO_TYPE);
+								a.appendInt(t);
+								s.send(a);
+							} catch (IOException e) {
+								OutputMessage a = new OutputMessage();
+								a.setType(FIBO_TYPE);
+								a.appendInt(-1);
+								s.send(a);
+								e.printStackTrace();
+							}
 						}
 						else{
 							System.out.println("SERVER -> client is rude ! No answer !");
@@ -82,10 +100,6 @@ public class FibServer {
 						}
 						break;
 					}
-				default:
-					System.out.println("SERVER -> type of message not recognized");
-					run = false;
-					break;
 				}
 			}
 		}
@@ -93,6 +107,7 @@ public class FibServer {
 		System.out.println("SERVER -> stopped");
 		return;
 	}
+
 	
 	// recursive version of fibo
 	public static int fibo(int n) {

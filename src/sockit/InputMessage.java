@@ -47,6 +47,13 @@ public class InputMessage {
 	}
 	
 	/**
+	 * Reset the cursor
+	 */
+	public void resetCursor(){
+    	this.din = new DataInputStream(this.content);
+	}
+	
+	/**
 	 * Returns the type of the input message
 	 * @return the type of the input message
 	 */
