@@ -8,7 +8,8 @@ import socket
 import traceback
 import struct
 
-import msg
+import inmsg
+import outmsg
 
 class Client(object):
     
@@ -117,18 +118,18 @@ class Client(object):
         """
         if self.isConnected:
             try:
-                header = self.socket.recv(msg.HEADER_SIZE)
-                if len(header) != msg.HEADER_SIZE:
-                    print("Header has the wrong size (%i != %i)" % (len(header), msg.HEADER_SIZE))
+                header = self.socket.recv(inmsg.HEADER_SIZE)
+                if len(header) != inmsg.HEADER_SIZE:
+                    print("Header has the wrong size (%i != %i)" % (len(header), inmsg.HEADER_SIZE))
                     return None
                 data_len  = struct.unpack("!i", header[:4])[0]
                 data_type = struct.unpack("!i", header[4:])[0]
                 
-                content = self.socket.recv(data_len - msg.HEADER_SIZE)
-                if len(content) != data_len - msg.HEADER_SIZE:
-                    print("Content has the wrong size (%i != %i)" % (len(content), data_len - msg.HEADER_SIZE))
+                content = self.socket.recv(data_len - inmsg.HEADER_SIZE)
+                if len(content) != data_len - inmsg.HEADER_SIZE:
+                    print("Content has the wrong size (%i != %i)" % (len(content), data_len - inmsg.HEADER_SIZE))
                     return None
-                m = msg.Message(data_type, data_len, content)
+                m = inmsg.InputMessage(data_type, content)
                 return m
             except:
                 traceback.print_exc(file=sys.stdout)

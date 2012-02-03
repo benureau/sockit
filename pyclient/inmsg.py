@@ -17,17 +17,32 @@ floatStruct  = struct.Struct("!f")
 doubleStruct = struct.Struct("!d")
 
 class InputMessage(object):
-            
-    def __init__(self, type = 0, length = HEADER_SIZE, content = ""):
+        
+    @classmethod
+    def from_bytes(cls, bytes):
         """
-        Build a message from a given type, length and content
-        @param type    the type of the message
-        @param length   the length of the message
-        @param content  the content to put in the message
+        Classmethod to create a message from a string, interpreted
+        as a bytes array. Probably not really often useful.
+        @bytes   the string holding the encoded message
+        @return  the message created
         """
-        self.type = type
-        assert length == HEADER_SIZE + len(content)
-        self.length = length
+        msg_type = intStruct.unpack_from(bytes, 0)[0]
+        length   = intStruct.unpack_from(bytes, 4)[0]
+        if len(bytes) < length:
+            raise ValueError, "Bytes array's encoded length does not fit the given ."
+        content  = bytes[8:]
+        
+        msg = cls(msg_type, content)
+        return msg
+
+    def __init__(self, msg_type = None, content = ""):
+        """
+        Build a message from a given type,  content
+        @param msg_type  the type of the message
+        @param content   the content to put in the message
+        """
+        self.type = msg_type
+        self.length = len(content)
         self.content = content
         self.cursor = 0
         
@@ -68,6 +83,16 @@ class InputMessage(object):
         i = intStruct.unpack_from(self.content, self.cursor)[0]
         self.cursor  += intStruct.size
         return i
+
+    def readLong(self):
+        """
+        Reads a long in the content of the message
+        @return the long read
+        """
+        self.checkForOverflow(longStruct.size)
+        l = longStruct.unpack_from(self.content, self.cursor)[0]
+        self.cursor  += longStruct.size
+        return l
         
     def readFloat(self):
         """

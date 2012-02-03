@@ -5,7 +5,7 @@ import sys, os
 sys.path += [os.path.join(os.path.dirname(__file__), '../')]
 
 import client
-from msg import Message
+from outmsg import OutputMessage
 
 # Socket adress
 PORT = 1984
@@ -16,7 +16,6 @@ HELLO_TYPE = 0
 BYE_TYPE   = 1
 FIBO_TYPE  = 2
 
-
 def clientTest():
     
     c = client.Client()
@@ -25,13 +24,13 @@ def clientTest():
     if b:
         print("CLIENT -> started")
         
-        hello = Message()
+        hello = OutputMessage()
         hello.type = HELLO_TYPE
         hello.appendString("Hello server !")
         c.send(hello)
         
         for i in range(41):
-            f = Message()
+            f = OutputMessage()
             f.type = FIBO_TYPE
             f.appendInt(i)
             print("CLIENT -> asking for fibo(", i ,")")
@@ -47,7 +46,7 @@ def clientTest():
                 print("CLIENT -> error in exchange")
                 c.disconnect()
                 break
-        bye = Message()
+        bye = OutputMessage()
         bye.type = BYE_TYPE
         bye.appendString("Bye Server !")
         c.send(bye)

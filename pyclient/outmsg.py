@@ -8,7 +8,6 @@ import types
 import struct
 
 HEADER_SIZE = 8
-BUFFER_SIZE = 256 # Not used.
 
 headerStruct = struct.Struct("!ii")        
 boolStruct   = struct.Struct("!?")
