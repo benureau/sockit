@@ -21,40 +21,44 @@ def clientTest():
     c = client.Client()
     b = c.connect(IP, PORT)
     
-    if b:
-        print("CLIENT -> started")
-        
-        hello = OutputMessage()
-        hello.type = HELLO_TYPE
-        hello.appendString("Hello server !")
-        c.send(hello)
-        
-        for i in range(41):
-            f = OutputMessage()
-            f.type = FIBO_TYPE
-            f.appendInt(i)
-            print("CLIENT -> asking for fibo(", i ,")")
-            a = c.sendAndReceive(f)
-            if a is not None:
-                if a.type == FIBO_TYPE:
-                    print("CLIENT -> fibo(", i, ") = ", a.readInt())
+    try:
+        if b:
+            print("CLIENT -> started")
+            
+            hello = OutputMessage()
+            hello.type = HELLO_TYPE
+            hello.appendString("Hello server !")
+            c.send(hello)
+            
+            for i in range(41):
+                f = OutputMessage()
+                f.type = FIBO_TYPE
+                f.appendInt(i)
+                print("CLIENT -> asking for fibo(", i ,")")
+                a = c.sendAndReceive(f)
+                if a is not None:
+                    if a.type == FIBO_TYPE:
+                        print("CLIENT -> fibo(", i, ") = ", a.readInt())
+                    else:
+                        print("CLIENT -> error in protocol")
+                        c.disconnect()
+                        break
                 else:
-                    print("CLIENT -> error in protocol")
+                    print("CLIENT -> error in exchange")
                     c.disconnect()
                     break
-            else:
-                print("CLIENT -> error in exchange")
-                c.disconnect()
-                break
-        bye = OutputMessage()
-        bye.type = BYE_TYPE
-        bye.appendString("Bye Server !")
-        c.send(bye)
+            bye = OutputMessage()
+            bye.type = BYE_TYPE
+            bye.appendString("Bye Server !")
+            c.send(bye)
+            c.disconnect()
+            print("CLIENT -> stopped")
+        else:
+            print("CLIENT -> error")
+        return
+    except:
         c.disconnect()
-        print("CLIENT -> stopped")
-    else:
-        print("CLIENT -> error")
-    return
 
 if __name__ == "__main__":
     clientTest()
+        
