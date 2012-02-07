@@ -1,0 +1,10 @@
+README
+setup.py
+Sockit.egg-info/PKG-INFO
+Sockit.egg-info/SOURCES.txt
+Sockit.egg-info/dependency_links.txt
+Sockit.egg-info/top_level.txt
+sockit/__init__.py
+sockit/client.py
+sockit/inmsg.py
+sockit/outmsg.py
