@@ -1,24 +1,24 @@
 
 clean:
-	rm -f *.class */*.class */*/*.class */*/*/*.class */*/*/*/*.class *.pyc */*.pyc */*/*.pyc */*/*/*.pyc;
+	rm -f *.class */*.class */*/*.class */*/*/*.class */*/*/*/*.class *.pyc */*.pyc */*/*.pyc */*/*/*.pyc; \
 	rm -Rf build/*
 	
 library: src/sockit/Server.java src/sockit/InputMessage.java src/sockit/OutputMessage.java src/sockit/Client.java src/sockit/utils/Utils.java
-	rm -Rf build/sockit/
+	rm -Rf build/sockit/; \
 	javac src/sockit/*.java src/sockit/*/*.java -d build/
 
 sockit.jar: library
-	jar -cf build/sockit.jar build/sockit/
+	cd build; \
+	jar -cf sockit.jar sockit/
 
-Example: library
-	javac src/Example.java -cp build/ -d build/
-	cd build; java Example
+Example: sockit.jar
+	javac src/ExampleDataStream.java -cp build/sockit.jar -d build/; \
+	cd build; java ExampleDataStream
 	
-Test: library
-	javac src/Test.java -cp build/ -d build/
+Test: sockit.jar
+	javac src/Test.java -cp build/ -d build/; \
 	cd build; java Test
 		
 FibServer:
-	javac pyclient/test/FibServer.java -cp build/ -d build/
+	javac pyclient/test/FibServer.java -cp build/ -d build/; \
 	cd build; java FibServer
-	
