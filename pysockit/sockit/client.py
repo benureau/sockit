@@ -29,6 +29,7 @@ class Client(object):
         @param   ip an IP address as a string
         @return  true if it's a valid IP address, or false if not.
         """
+        return True
         tokens = ip.split(".")
         if len(tokens) != 4:
             return False
@@ -91,7 +92,6 @@ class Client(object):
         #FIXME socketLock lock
         if self.unprotectedSend(message):
             answer = self.unprotectedReceive()
-        print(answer)
         if answer is None:
             self.unprotectedDisconnect()
         #FIXME socketLock unlock

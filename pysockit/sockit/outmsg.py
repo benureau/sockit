@@ -18,7 +18,7 @@ doubleStruct = struct.Struct("!d")
 
 class OutputMessage(object):
             
-    def __init__(self, type = None):
+    def __init__(self, type = None, contentList = None):
         """
         Build a message from a given type, length and content
         @param type    the type of the message
@@ -27,7 +27,25 @@ class OutputMessage(object):
         """
         self.type = type
         self.length = HEADER_SIZE
-        self.content = []    
+        self.content = []
+        if contentList is not None:
+            self.makeContent(contentList)
+        
+    def makeContent(self, contentList):
+        for a in contentList:
+            if   type(a) == types.BooleanType:
+                self.appendBool(a)
+            elif type(a) == types.IntType:
+                self.appendInt(a)
+            elif type(a) == types.LongType:
+                self.appendLong(a)
+            elif type(a) == types.FloatType:
+                self.appendFloat(a)
+            # elif type(a) == types.DoubleType:
+            #     self.appendDouble(a)
+            elif type(a) == types.StringType:
+                self.appendString(a)
+        
         
     def getBytes(self):
         """

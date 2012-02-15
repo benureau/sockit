@@ -8,6 +8,8 @@ public class InputMessage {
 	
 	//type of the message
 	private int type = 0;
+	//type of the message
+	private int length = 0;
 	// OutoutStream used to write data
 	private ByteArrayInputStream content;
 	// DataInputstream used to write data using a machine-independent way
@@ -22,6 +24,7 @@ public class InputMessage {
 	 */
 	public InputMessage(int type, byte[] content){
 		this.type = type;
+		this.length = InputMessage.HEADER_SIZE + content.length;
 		this.content = new ByteArrayInputStream(content);
 		this.din = new DataInputStream(this.content);
 	}
@@ -62,6 +65,14 @@ public class InputMessage {
 	}
 	
 	/**
+	 * Returns the length of the input message
+	 * @return the length of the input message
+	 */
+	public int getLength(){
+		return this.length;
+	}
+	
+	/**
 	 * Reads a boolean in the message content
 	 * @return the boolean read
 	 * @throws IOException if readBoolean fails
@@ -69,6 +80,7 @@ public class InputMessage {
 	public boolean readBoolean() throws IOException{
 		return din.readBoolean();
 	}
+	
 	
 	/**
 	 * Reads a string in the content of the message

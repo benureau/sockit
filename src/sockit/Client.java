@@ -9,8 +9,6 @@ import java.net.Socket;
 import java.util.StringTokenizer;
 import java.util.concurrent.locks.ReentrantLock;
 
-import sockit.utils.Utils;
-
 
 public class Client {
 

@@ -10,8 +10,6 @@ import java.net.Socket;
 import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
 
-import sockit.utils.Utils;
-
 
 public class Server {
 
@@ -138,11 +136,13 @@ public class Server {
 		 * @return the message or null if the queue is empty
 		 */
 		public InputMessage receive() {
-			if(isReady == false)
-				return null;
+			if(isReady == false) {
+                System.out.println("isReady was False");
+				return null;}
 			this.queueLock.lock();
 			int size = this.queue.size();
 			if(size == 0){
+                System.out.println("size was null");
 				this.queueLock.unlock();
 				return null;
 			}
@@ -203,47 +203,56 @@ public class Server {
 			try {
 				// creating the socket (bind and listen included)
 				this.server = new ServerSocket(this.port, BACKLOG);
-				s = server.accept();
-				this.in = s.getInputStream();
-				this.out = s.getOutputStream();
-				this.isReady = true;
-				boolean running = true;
-				while(running){
-					byte[] header = new byte[InputMessage.HEADER_SIZE];
-					int len = in.read(header, 0, InputMessage.HEADER_SIZE);
-					if(len == InputMessage.HEADER_SIZE){
-						ByteArrayInputStream bis = new ByteArrayInputStream(header);
-						DataInputStream dis = new DataInputStream(bis);
-						int length = dis.readInt();
-						int type = dis.readInt();
-						byte[] content = new byte[length - InputMessage.HEADER_SIZE];
-						len = in.read(content, 0, length - InputMessage.HEADER_SIZE);
-						if(len == length - InputMessage.HEADER_SIZE){
-							InputMessage message = new InputMessage(type,content);
-							this.queueLock.lock();
-							this.queue.add(message);
-							this.queueLock.unlock();
-						}
-						else{
-							running = false;
-						}
-					}
-					else{
-						running = false;
-					}
-				}
+				
+                while(true) {
+                    if (this.isReady == false) {
+        				System.out.println("STATUS : Accepting new connections");
+        				s = server.accept();
+        				this.in = s.getInputStream();
+        				this.out = s.getOutputStream();
+        				this.isReady = true;
+        				System.out.println("STATUS : Accepting messages");
+                    }
+                    
+    				boolean running = true;
+
+                    while(running){
+    					// Reading the header of an input message
+                        byte[] header = new byte[InputMessage.HEADER_SIZE];
+    					int len = in.read(header, 0, InputMessage.HEADER_SIZE);
+					
+                        if(len == InputMessage.HEADER_SIZE){
+    						ByteArrayInputStream bis = new ByteArrayInputStream(header);
+    						DataInputStream dis = new DataInputStream(bis);
+    						int length = dis.readInt();
+    						int type = dis.readInt();
+        					// Reading the content of an input message					
+                            byte[] content = new byte[length - InputMessage.HEADER_SIZE];
+    						len = in.read(content, 0, length - InputMessage.HEADER_SIZE);
+					
+                        	if(len == length - InputMessage.HEADER_SIZE){
+            					// Adding it to the queue					
+                                InputMessage message = new InputMessage(type,content);
+    							this.queueLock.lock();
+    							this.queue.add(message);
+    							this.queueLock.unlock();
+    						}
+    						else{
+                				System.out.println("ERROR : Received message with wrong content format, of type "+type+" and lenght "+length+".");
+                                running = false;
+                                this.isReady = false;
+    						}
+    					}
+    					else{
+            				System.out.println("STATUS : Connection was closed");
+    						running = false;
+                            this.isReady = false;
+    					}
+    				}
+                }            
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			this.isReady = false;
-			try {
-				this.in.close();
-				this.out.close();
-				s.close();
-				this.server.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	};
+        }
+    }
 }
