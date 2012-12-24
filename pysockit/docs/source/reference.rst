@@ -3,4 +3,6 @@
 
 .. toctree::
 
-   outmsg.rst
+   ref/client.rst
+   ref/inmsg.rst
+   ref/outmsg.rst
