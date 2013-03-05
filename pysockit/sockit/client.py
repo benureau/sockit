@@ -7,12 +7,13 @@ import sys
 import socket
 import traceback
 import struct
+import select
 
 import inmsg
 
 class Client(object):
 
-    def __init__(self):
+    def __init__(self, debug = False):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.isConnected = False
         self.output = None # output stream
@@ -21,6 +22,8 @@ class Client(object):
         self.port = 0
         self.ip = "127.0.0.1"
         self.socketLock = None
+
+        self.debug = debug
 
     def checkIP(self, ip):
         """ Checks if an string is an IPv4 address or not
@@ -81,7 +84,7 @@ class Client(object):
         #FIXME socketLock unlock
         return ret
 
-    def sendAndReceive(self, message):
+    def sendAndReceive(self, message, timeout = 100):
         """ This sends a message and wait for the answer
 
             :arg   message the message to send
@@ -90,10 +93,12 @@ class Client(object):
         answer = None
         #FIXME socketLock lock
         if self.unprotectedSend(message):
-            answer = self.unprotectedReceive()
-        if answer is None:
-            self.unprotectedDisconnect()
+            answer = self.unprotectedReceive(timeout)
         #FIXME socketLock unlock
+        return answer
+
+    def receive(self, timeout = float('inf')):
+        answer = self.unprotectedReceive(timeout)
         return answer
 
     def unprotectedSend(self, message):
@@ -107,36 +112,40 @@ class Client(object):
                 self.socket.send(message.getBytes())
                 return True;
             except:
-                traceback.print_exc(file=sys.stdout)
+                if self.debug:
+                    traceback.print_exc(file=sys.stdout)
         return False;
 
-    def unprotectedReceive(self):
+    def unprotectedReceive(self, timeout = 1.0):
         """ Receive a message without controlling if the socket is already used
 
             :return:  the message received or null
         """
         if self.isConnected:
             try:
-                header = self.socket.recv(inmsg.HEADER_SIZE)
-                if len(header) != inmsg.HEADER_SIZE:
-                    print("Header has the wrong size (%i != %i)" % (len(header), inmsg.HEADER_SIZE))
-                    return None
-                data_len  = struct.unpack("!i", header[:4])[0]
-                #print "received a header announcing of lenght %i" % data_len
-                data_type = struct.unpack("!i", header[4:])[0]
+                ready = select.select([self.socket], [], [], timeout)
+                if ready[0]:
+                    header = self.socket.recv(inmsg.HEADER_SIZE)
+                    if len(header) != inmsg.HEADER_SIZE:
+                        print("Header has the wrong size (%i != %i)" % (len(header), inmsg.HEADER_SIZE))
+                        return None
+                    data_len  = struct.unpack("!i", header[:4])[0]
+                    #print "received a header announcing of lenght %i" % data_len
+                    data_type = struct.unpack("!i", header[4:])[0]
 
-                #print "fetching %i more bytes" % (data_len - inmsg.HEADER_SIZE)
-                if data_len - inmsg.HEADER_SIZE == 0:
-                    content = ""
-                else:
-                    content = self.socket.recv(data_len - inmsg.HEADER_SIZE)
-                #print "received a message of lenght %i" % data_len
+                    #print "fetching %i more bytes" % (data_len - inmsg.HEADER_SIZE)
+                    if data_len - inmsg.HEADER_SIZE == 0:
+                        content = ""
+                    else:
+                        content = self.socket.recv(data_len - inmsg.HEADER_SIZE)
+                    #print "received a message of lenght %i" % data_len
 
-                if len(content) != data_len - inmsg.HEADER_SIZE:
-                    print("Content has the wrong size (%i != %i)" % (len(content), data_len - inmsg.HEADER_SIZE))
-                    return None
-                m = inmsg.InboundMessage(data_type, content)
-                return m
+                    if len(content) != data_len - inmsg.HEADER_SIZE:
+                        print("Content has the wrong size (%i != %i)" % (len(content), data_len - inmsg.HEADER_SIZE))
+                        return None
+                    m = inmsg.InboundMessage(data_type, content)
+                    return m
+                return None
             except:
                 traceback.print_exc(file=sys.stdout)
         return None
@@ -160,9 +169,11 @@ class Client(object):
                     try:
                         self.socket.close()
                     except:
-                        traceback.print_exc(file=sys.stdout)
+                        if self.debug:
+                            traceback.print_exc(file=sys.stdout)
                     # FIXME: probably a double of previous stack trace.
-                    traceback.print_exc(file=sys.stdout)
+                    if self.debug:
+                        traceback.print_exc(file=sys.stdout)
             else:
                 print("Not an ip adress %s" % (ip,))
         return self.isConnected

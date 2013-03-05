@@ -3,4 +3,6 @@
 *.pyc
 build/
 pysockit/dist
+pysockit/Sockit.egg-info/
+pysockit/sockit.egg-info/
 pysockit/files.txt

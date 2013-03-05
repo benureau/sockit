@@ -9,7 +9,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-    name = "Sockit",
+    name = "sockit",
     version = "0.1",
     author = "Paul Fudal and Fabien Benureau",
     author_email = "paul.fudal@inria.fr",

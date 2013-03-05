@@ -50,7 +50,7 @@ class OutboundMessage(object):
         self.length = HEADER_SIZE
         self.content = []
         if content is not None:
-            self.addContent(contentList)
+            self.addContent(content)
 
     def addContent(self, content):
         for a in content:
@@ -61,7 +61,7 @@ class OutboundMessage(object):
             elif type(a) == types.LongType:
                 self.appendLong(a)
             elif type(a) == types.FloatType:
-                self.appendFloat(a)
+                self.appendDouble(a)
             elif type(a) == types.StringType:
                 self.appendString(a)
 

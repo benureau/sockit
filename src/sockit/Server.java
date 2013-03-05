@@ -244,7 +244,7 @@ public class Server {
                             }
                         }
                         else{
-                            System.out.println("STATUS : Connection was closed");
+                            System.out.println("STATUS : Connection was closed because "+len);
                             running = false;
                             this.isReady = false;
                         }
