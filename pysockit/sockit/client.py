@@ -40,7 +40,7 @@ class Client(object):
                 return False
         return True
 
-    def connect(self, ip, port):
+    def connect(self, ip, port = 0):
         """ Connect to a server at a specified ip address and port
 
             :arg ip:   the ip of the server
@@ -50,6 +50,7 @@ class Client(object):
         #FIXME socketLock lock
         b = self.unprotectedConnect(ip, port)
         #FIXME socketLock unlock
+        self.port = self.socket.getsockname()[1]
         return b
 
     def reConnect(self):
