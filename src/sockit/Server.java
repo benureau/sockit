@@ -61,7 +61,7 @@ public class Server {
 	 * @param message the message to send
 	 * @return true if the message is sent, false otherwise
 	 */
-	public boolean send(OutputMessage message) {
+	public boolean send(OutboundMessage message) {
 		this.lock.lock();
 		if(this.thread == null){
 			this.lock.unlock();
@@ -76,13 +76,13 @@ public class Server {
 	 * Returns a message received. If no message are received in background, the method wait for a new one...
 	 * @return the message received or null
 	 */
-	public InputMessage receive() {
+	public InboundMessage receive() {
 		this.lock.lock();
 		if(this.thread == null){
 			this.lock.unlock();
 			return null;
 		}
-		InputMessage r = this.thread.receive();
+		InboundMessage r = this.thread.receive();
 		this.lock.unlock();
 		return r;
 	}
@@ -117,7 +117,7 @@ public class Server {
 		// lock to protect the queue containing messages received
 		private ReentrantLock queueLock = null;
 		// the queue containing received message
-		private Vector<InputMessage> queue;
+		private Vector<InboundMessage> queue;
 		// input and output stream
 		private InputStream in = null;
 		private OutputStream out = null;
@@ -128,16 +128,16 @@ public class Server {
 		public ServerThread(int port){
 			this.port = port;
 			this.queueLock = new ReentrantLock();
-			this.queue = new Vector<InputMessage>();
+			this.queue = new Vector<InboundMessage>();
 		}
 		
 		/**
 		 * Extract the first message in the queue
 		 * @return the message or null if the queue is empty
 		 */
-		public InputMessage receive() {
+		public InboundMessage receive() {
 			if(isReady == false) {
-                System.out.println("isReady was False");
+                //System.out.println("isReady was False");
 				return null;}
 			this.queueLock.lock();
 			int size = this.queue.size();
@@ -147,7 +147,7 @@ public class Server {
 				return null;
 			}
 			else{
-				InputMessage answer = this.queue.firstElement();
+				InboundMessage answer = this.queue.firstElement();
 				this.queue.remove(0);
 				this.queueLock.unlock();
 				return answer;
@@ -170,7 +170,7 @@ public class Server {
 		 * @param message the message to send
 		 * @return
 		 */
-		public boolean send(OutputMessage message) {
+		public boolean send(OutboundMessage message) {
 			if(isReady == false)
 				return false;
 			try {
@@ -218,35 +218,44 @@ public class Server {
 
                     while(running){
     					// Reading the header of an input message
-                        byte[] header = new byte[InputMessage.HEADER_SIZE];
-    					int len = in.read(header, 0, InputMessage.HEADER_SIZE);
+                        byte[] header = new byte[InboundMessage.HEADER_SIZE];
+    					int len = in.read(header, 0, InboundMessage.HEADER_SIZE);
 					
-                        if(len == InputMessage.HEADER_SIZE){
+                        if(len == InboundMessage.HEADER_SIZE){
     						ByteArrayInputStream bis = new ByteArrayInputStream(header);
     						DataInputStream dis = new DataInputStream(bis);
     						int length = dis.readInt();
     						int type = dis.readInt();
         					// Reading the content of an input message					
-                            byte[] content = new byte[length - InputMessage.HEADER_SIZE];
-    						len = in.read(content, 0, length - InputMessage.HEADER_SIZE);
-					
-                        	if(len == length - InputMessage.HEADER_SIZE){
+                            int toRead = length - InboundMessage.HEADER_SIZE;
+    						int cursor = 0;
+                            byte[] content = new byte[toRead];
+    						while(toRead > 0){
+    							int r = in.read(content, cursor, toRead);
+    							toRead = toRead - r;
+    							cursor = cursor + r;
+    							
+    						}
+                        	if(toRead == 0){
             					// Adding it to the queue					
-                                InputMessage message = new InputMessage(type,content);
+                                InboundMessage message = new InboundMessage(type,content);
     							this.queueLock.lock();
     							this.queue.add(message);
     							this.queueLock.unlock();
     						}
     						else{
-                				System.out.println("ERROR : Received message with wrong content format, of type "+type+" and lenght "+length+".");
+                				System.out.println("ERROR : Received message with wrong content format, of type "+type+" and lenght "+length+"."+ " -> "+len);
+                				System.out.println("READ MORE : " + len);
                                 running = false;
                                 this.isReady = false;
+                                s.close();
     						}
     					}
     					else{
             				System.out.println("STATUS : Connection was closed");
     						running = false;
                             this.isReady = false;
+                            s.close();
     					}
     				}
                 }            

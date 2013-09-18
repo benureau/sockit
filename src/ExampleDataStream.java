@@ -1,8 +1,8 @@
 import java.io.IOException;
 
 import sockit.Client;
-import sockit.InputMessage;
-import sockit.OutputMessage;
+import sockit.InboundMessage;
+import sockit.OutboundMessage;
 import sockit.Server;
 
 
@@ -64,7 +64,7 @@ public class ExampleDataStream {
 		while(run == true){
 			int n = s.getNumberOfMessages();
 			if(n > 0){
-				InputMessage in = s.receive();
+				InboundMessage in = s.receive();
 				int type = in.getType();
 				switch(type){
 				case HELLO_TYPE:
@@ -81,7 +81,7 @@ public class ExampleDataStream {
 					{
 						try {
 							System.out.println("SERVER -> receives : " + in.readString());
-							OutputMessage a = new OutputMessage();
+							OutboundMessage a = new OutboundMessage();
 							a.setType(BYE_TYPE);
 							s.send(a);
 							count = false;
@@ -99,12 +99,12 @@ public class ExampleDataStream {
 								f = in.readInt();
 								System.out.println("SERVER -> computes fibo(" + f + ")");
 								int t = fibo(f);
-								OutputMessage a = new OutputMessage();
+								OutboundMessage a = new OutboundMessage();
 								a.setType(FIBO_TYPE);
 								a.appendInt(t);
 								s.send(a);
 							} catch (IOException e) {
-								OutputMessage a = new OutputMessage();
+								OutboundMessage a = new OutboundMessage();
 								a.setType(FIBO_TYPE);
 								a.appendInt(-1);
 								s.send(a);
@@ -131,16 +131,16 @@ public class ExampleDataStream {
 		boolean b = c.connect("127.0.0.1", PORT);
 		if(b == true){
 			System.out.println("CLIENT -> started");
-			OutputMessage hello = new OutputMessage();
+			OutboundMessage hello = new OutboundMessage();
 			hello.setType(HELLO_TYPE);
 			hello.appendString("Hello server !");
 			c.send(hello);
 			for(int i = 1 ; i < 41 ; i++){
-				OutputMessage f = new OutputMessage();
+				OutboundMessage f = new OutboundMessage();
 				f.setType(FIBO_TYPE);
 				f.appendInt(i);
 				System.out.println("CLIENT -> asking for fibo(" + i + ")");
-				InputMessage a = c.sendAndReceive(f);
+				InboundMessage a = c.sendAndReceive(f);
 				if(a != null){
 					if(a.getType() == FIBO_TYPE){
 						try {
@@ -161,7 +161,7 @@ public class ExampleDataStream {
 					break;
 				}
 			}
-			OutputMessage bye = new OutputMessage();
+			OutboundMessage bye = new OutboundMessage();
 			bye.setType(BYE_TYPE);
 			bye.appendString("Bye Server !");
 			c.send(bye);
