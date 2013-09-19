@@ -22,7 +22,7 @@ public class OutputMessage {
 		content = new ByteArrayOutputStream();
 		dout = new DataOutputStream(content);
 	}	
-	
+
 	/**
 	 * Constructs a message with a specified type
 	 * @param type the type of the message
@@ -40,7 +40,7 @@ public class OutputMessage {
 	public int getType(){
 		return this.type;
 	}
-	
+
 	/**
 	 * Sets the type of the message
 	 * @param type the new type of the message
@@ -48,7 +48,7 @@ public class OutputMessage {
 	public void setType(int type){
 		this.type = type;
 	}
-	
+
 	/**
 	 * returns a message as a bytes array
 	 * @return the message as a bytes array
@@ -65,7 +65,7 @@ public class OutputMessage {
 		System.arraycopy(content, 0, message, header.length, content.length);
 		return message;
 	}
-	
+
 	/**
 	 * Returns the header as a bytes array
 	 * @return the header of the message as a byte array
@@ -84,7 +84,7 @@ public class OutputMessage {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Returns the content of the message as a byte array
 	 * @return
@@ -99,7 +99,7 @@ public class OutputMessage {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Writes a Boolean in the message content
 	 * @param b the boolean to write
@@ -112,7 +112,7 @@ public class OutputMessage {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Write a string in the message content as a sequence of characters
 	 * @param s the string to write
@@ -125,7 +125,7 @@ public class OutputMessage {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Write a double in the message content
 	 * @param d the double to write
@@ -138,7 +138,7 @@ public class OutputMessage {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Write a float in the content of the message
 	 * @param f the float to write
@@ -151,7 +151,7 @@ public class OutputMessage {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Writes an int in the message content
 	 * @param i the it to write
@@ -164,7 +164,7 @@ public class OutputMessage {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Writes a long in the message content
 	 * @param l the long to write
