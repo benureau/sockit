@@ -4,7 +4,7 @@ clean:
 	rm -f *.class */*.class */*/*.class */*/*/*.class */*/*/*/*.class *.pyc */*.pyc */*/*.pyc */*/*/*.pyc; \
 	rm -Rf build/*
 
-library: src/sockit/Server.java src/sockit/InputMessage.java src/sockit/OutputMessage.java src/sockit/Client.java
+library: src/sockit/Server.java src/sockit/InboundMessage.java src/sockit/OutboundMessage.java src/sockit/Client.java
 	mkdir -p build; \
 	rm -Rf build/sockit/; \
 	javac src/sockit/*.java -d build/
