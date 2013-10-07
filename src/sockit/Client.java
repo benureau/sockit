@@ -106,7 +106,7 @@ public class Client {
      * @param message the message to send
      * @return true if the message is sent, false otherwise. If an error occurs during, the socket will be closed.
      */
-    public boolean send(OutputMessage message) {
+    public boolean send(OutboundMessage message) {
         this.socketLock.lock();
         boolean ret = this.unprotectedSend(message);
         if(ret == false)
@@ -120,8 +120,8 @@ public class Client {
      * @param message the message to send
      * @return the answer message received
      */
-    public InputMessage sendAndReceive(OutputMessage message) {
-        InputMessage answer = null;
+    public InboundMessage sendAndReceive(OutboundMessage message) {
+        InboundMessage answer = null;
         this.socketLock.lock();
         if(this.unprotectedSend(message) == true){
             answer = this.unprotectedReceive();
@@ -137,7 +137,7 @@ public class Client {
      * @param message to send
      * @return true or false if send fails
      */
-    private boolean unprotectedSend(OutputMessage message){
+    private boolean unprotectedSend(OutboundMessage message){
         if(isConnected){
             try {
                 System.out.println("J'envoie " + message.getBytes().length + " bytes");
@@ -155,22 +155,22 @@ public class Client {
      * Receive a message without controlling if the socket is already used
      * @return the message received or null
      */
-    private InputMessage unprotectedReceive(){
+    private InboundMessage unprotectedReceive(){
         if(isConnected == true){
             try{
-                byte[] header = new byte[InputMessage.HEADER_SIZE];
-                int len = in.read(header, 0, InputMessage.HEADER_SIZE);
-                if(len != InputMessage.HEADER_SIZE)
+                byte[] header = new byte[InboundMessage.HEADER_SIZE];
+                int len = in.read(header, 0, InboundMessage.HEADER_SIZE);
+                if(len != InboundMessage.HEADER_SIZE)
                     return null;
                 ByteArrayInputStream bis = new ByteArrayInputStream(header);
                 DataInputStream dis = new DataInputStream(bis);
                 int length = dis.readInt();
                 int type = dis.readInt();
-                byte[] content = new byte[length - InputMessage.HEADER_SIZE];
-                len = in.read(content, 0, length - InputMessage.HEADER_SIZE);
-                if(len != length - InputMessage.HEADER_SIZE)
+                byte[] content = new byte[length - InboundMessage.HEADER_SIZE];
+                len = in.read(content, 0, length - InboundMessage.HEADER_SIZE);
+                if(len != length - InboundMessage.HEADER_SIZE)
                     return null;
-                InputMessage message = new InputMessage(type, content);
+                InboundMessage message = new InboundMessage(type, content);
                 return message;
             }catch(IOException e) {
                 e.printStackTrace();
