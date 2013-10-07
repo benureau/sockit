@@ -6,14 +6,8 @@
 import types
 import struct
 
-HEADER_SIZE = 8
+from protocol import *
 
-headerStruct = struct.Struct("!ii")
-boolStruct   = struct.Struct("!?")
-intStruct    = struct.Struct("!i")
-longStruct   = struct.Struct("!l")
-floatStruct  = struct.Struct("!f")
-doubleStruct = struct.Struct("!d")
 
 class InboundMessage(object):
 
@@ -46,47 +40,55 @@ class InboundMessage(object):
         if len(self.content) < self.cursor + size:
             raise ValueError, "Read exceed content range."
 
-    def readBoolean(self):
-        """ Reads a float in the content of the message """
-        self.checkForOverflow(boolStruct.size)
-        b = boolStruct.unpack_from(self.content, self.cursor)[0]
-        self.cursor  += boolStruct.size
-        return b
+    def _read(self, type_str):
+        """ Read an element, provided a format"""
+        type_struct = structdict[type_str]
+        self.checkForOverflow(type_struct.size)
+        e = type_struct.unpack_from(self.content, self.cursor)[0]
+        self.cursor  += type_struct.size
+        return e
 
-    def readInt(self):
-        """ Reads an int in the content of the message """
-        self.checkForOverflow(intStruct.size)
-        i = intStruct.unpack_from(self.content, self.cursor)[0]
-        self.cursor  += intStruct.size
-        return i
+    def read(self):
+        """ Read an element of the message """
+        type_str = self._read('c')
+        return InboundMessage._readdict[type_str](self, type_str)
 
-    def readLong(self):
-        """ Reads a long in the content of the message """
-        self.checkForOverflow(longStruct.size)
-        l = longStruct.unpack_from(self.content, self.cursor)[0]
-        self.cursor  += longStruct.size
-        return l
-
-    def readFloat(self):
-        """ Reads a float in the content of the message """
-        self.checkForOverflow(floatStruct.size)
-        f = floatStruct.unpack_from(self.content, self.cursor)[0]
-        self.cursor  += floatStruct.size
-        return f
-
-    def readDouble(self):
-        """ Reads a double in the content of the message """
-        self.checkForOverflow(doubleStruct.size)
-        d = doubleStruct.unpack_from(self.content, self.cursor)[0]
-        self.cursor  += doubleStruct.size
-        return d
-
-    def readString(self):
+    def _readString(self, *args):
         """ Reads a string in the content of the message """
-        self.checkForOverflow(intStruct.size)
-        i = intStruct.unpack_from(self.content, self.cursor)[0]
-        self.cursor  += intStruct.size
-        self.checkForOverflow(i)
-        s = self.content[self.cursor:self.cursor+i]
-        self.cursor  += i
+        size = self._read('i')
+        self.checkForOverflow(size)
+        s = self.content[self.cursor:self.cursor+size]
+        self.cursor  += size
         return s
+
+    def _readList(self, *args):
+        """ Reads a tuple of elements in the content of the message"""
+        self.checkForOverflow(intStruct.size)
+        list_size = self._read('i')
+        type_str  = self._read('c')
+        if type_str == 'x':
+            return tuple(self.read() for _ in range(list_size))
+        else:
+            f_read = InboundMessage._readdict[type_str]
+            return tuple(f_read(self, type_str) for _ in range(list_size))
+
+    # def _readDict(self, keytype, valueType):
+    #     """ Reads a dictionary in the content of the message
+    #         :param keytype:    the type of the key, amongst 'int', 'boolean',
+    #                            'long', 'float', 'double', 'string', 'list'.
+    #         :param valuetype:  same for values
+    #     """
+    #     self.checkForOverflow(intStruct.size)
+    #     dict_size = self.readInt()
+    #     key_f   = getattr(self, 'read'+keytype.capitalize())
+    #     value_f = getattr(self, 'read'+valuetype.capitalize())
+    #     return {key_f() : value_f() for _ in range(dict_size)}
+
+    _readdict = {'?': _read,
+                 'i': _read,
+                 'f': _read,
+                 'd': _read,
+                 'l': _read,
+                 's': _readString,
+                 'T': _readList}
+

@@ -1,182 +1,106 @@
 from __future__ import print_function, division
+
 import sys, os
 import random
 
-import sys, os
-sys.path += [os.path.join(os.path.dirname(__file__), '../')]
-
-import msg
+import env
+import inmsg
+import outmsg
+import protocol
 
 num_it = 1024
 
-raise DeprecationWarning("test is not up-to-date with code")
+#raise DeprecationWarning("test is not up-to-date with code")
 
 def test_message_int():
     """Test read and write ints."""
     result = True
 
-    message = msg.Message()
+    message = outmsg.OutboundMessage(0)
     for i in range(num_it):
-        message.appendInt(i)
-        if message.length != msg.HEADER_SIZE + (i+1)*msg.intStruct.size:
-            print("Size is ", message.length, " but should be ", msg.HEADER_SIZE + (i+1)*msg.intStruct.size)
-            print("Error : message.appendInt")
+        message.append(i)
+        correct_size = protocol.headerStruct.size + (i+1)*protocol.intStruct.size
+        if message.length != correct_size:
+            print("Size is ", message.length, " but should be ", correct_size)
             result = False
 
-    message.resetCursor()
+    message = inmsg.InboundMessage(0, content = message.getBytes(header = False))
     for i in range(num_it):
-        r = message.readInt()
+        r = message.read()
         if r != i:
             print(r, " vs ", i)
-            print("Error : message.read/appendInt")
             result = False
 
     return result
-
-def test_message_float():
-    """Test read and write floats."""
-    result = True
-
-    message = msg.Message()
-    for i in range(num_it):
-        message.appendFloat(i/128.789456)
-        if message.length != msg.HEADER_SIZE + (i+1)*msg.floatStruct.size:
-            print("Size is ", message.length, " but should be ", msg.HEADER_SIZE + (i+1)*msg.floatStruct.size)
-            print("Error : message.appendFloat")
-            result = False
-
-    message.resetCursor()
-    for i in range(num_it):
-        r = message.readFloat()
-        if abs(r - i/128.789456) > 0.000001:
-            print(r, " vs ", i/128.789456)
-            print("Error : message.read/appendFloat")
-            result = False
-
-    return result
-
-def test_message_boolean():
-    """Test read and write booleans."""
-    result = True
-
-    message = msg.Message()
-    for i in range(num_it):
-        message.appendBoolean(True if i % 2 == 0 else False)
-        if message.length != msg.HEADER_SIZE + (i+1)*msg.boolStruct.size:
-            print("Size is ", message.length, " but should be ", msg.HEADER_SIZE + (i+1)*msg.boolStruct.size)
-            print("Error : message.appendBoolean")
-            result = False
-
-    message.resetCursor()
-    for i in range(num_it):
-        r = message.readBoolean()
-        if r != (True if i % 2 == 0 else False):
-            print(r, " vs ", (True if i % 2 == 0 else False))
-            print("Error : message.read/appendBoolean")
-            result = False
-
-    return result
-
 
 def test_message_string():
     """Test read and write strings."""
     result = True
 
-    message = msg.Message()
-    size = 0
+    message = outmsg.OutboundMessage(0)
+    correct_size = protocol.headerStruct.size
     for i in range(num_it):
-        message.appendString(str(i) + "azertyuiopqsdfghjklmwxcvbn")
-        size += len(str(i) + "azertyuiopqsdfghjklmwxcvbn")
-        if message.length != msg.HEADER_SIZE + (i+1)*msg.intStruct.size + size:
-            print("Size is ", message.length, " but should be ", msg.HEADER_SIZE + (i+1)*msg.intStruct.size + size)
-            print("Error : message.appendString")
+        s = str(i) + "azertyuiopqsdfghjklmwxcvbn"
+        message.append(s)
+        correct_size += protocol.intStruct.size + len(s)
+        if message.length != correct_size:
+            print("Size is ", message.length, " but should be ", correct_size)
             result = False
 
-    message.resetCursor()
+    message = inmsg.InboundMessage(0, content = message.getBytes(header = False))
     for i in range(num_it):
-        r = message.readString()
+        r = message.read()
         if r != str(i) + "azertyuiopqsdfghjklmwxcvbn":
             print(r, " vs ", str(i) + "azertyuiopqsdfghjklmwxcvbn")
-            print("Error : message.read/appendString")
             result = False
 
     return result
 
-
-def test_message_mixed():
-    """Test read and write mixed datatypes."""
+def test_message_list():
+    """Test read and write homogeneous list."""
     result = True
 
-    message = msg.Message()
-    size = 0
-    for i in range(num_it):
-        message.appendInt(8848)
-        message.appendBoolean(True)
-        message.appendFloat(128.789456)
-        message.appendString(str(i) + "azertyuiopmlkjhgfdsqwxcvbn")
+    message = outmsg.OutboundMessage(0)
+    message.append(list(range(10)))
 
-        size += msg.intStruct.size + msg.boolStruct.size + msg.floatStruct.size + msg.intStruct.size + len(str(i) + "azertyuiopqsdfghjklmwxcvbn")
-        if message.length != msg.HEADER_SIZE + size:
-            print("Size is ", message.length, " but should be ", msg.HEADER_SIZE + size)
-            print("Error : message.appendMixed")
-            result = False
+    message = inmsg.InboundMessage(0, content = message.getBytes(header = False))
 
-    message.resetCursor()
-    for i in range(num_it):
-        a = message.readInt()
-        b = message.readBoolean()
-        c = message.readFloat()
-        d = message.readString()
-        if a != 8848:
-            print("Error in int", i, a)
-            result = False
-        if not b is True:
-            print("Errro in boolean", i, b)
-            result = False
-        if abs(c- 128.789456) > 0.00001:
-            print("Error in float", i, c)
-            result = False
-        if d !=  str(i) + "azertyuiopmlkjhgfdsqwxcvbn":
-            print("Error in string", i, d)
-            result = False
-
-    return result
+    return message.read() == tuple(range(10))
 
 
-        # // mixed
-        # message = new Message();
-        #       for(int j = 0 ; j < 1024 ; j++){
-        #     message.resetCursor();
-        #     message.appendInt(8848);
-        #     message.appendBoolean(true);
-        #     message.appendFloat((float) 128.789456);
-        #     message.appendString("azertyuiopmlkjhgfdsqwxcvbn");
-        #     message.resetCursor();
-        #     if(message.readInt() != 8848){
-        #         System.out.println("Error in Int");
-        #         System.exit(0);
-        #     }
-        #     if(message.readBoolean() != true){
-        #         System.out.println("Error in Boolean");
-        #         System.exit(0);
-        #     }
-        #     if(message.readFloat() != (float) 128.789456){
-        #         System.out.println("Error in Float");
-        #         System.exit(0);
-        #     }
-        #     if(message.readString().compareTo("azertyuiopmlkjhgfdsqwxcvbn") != 0){
-        #         System.out.println("Error in String");
-        #         System.exit(0);
-        #     }
-        # }
-        # System.out.println("OK : mixed types");
+def test_message_list2():
+    """Test read and write heterogeneous list."""
+    result = True
+
+    l = [1, 2.0, 'abc', False, 2]
+    message = outmsg.OutboundMessage(0)
+    message.append(l)
+
+    message = inmsg.InboundMessage(0, content = message.getBytes(header = False))
+
+    return message.read() == tuple(l)
+
+
+def test_message_list3():
+    """Test read and write nested list."""
+    result = True
+
+    l = [1, 2.0, 'abc', ('abc', True, 3.1), False, 2, (1, 2)]
+    message = outmsg.OutboundMessage(0)
+    message.append(l)
+
+    message = inmsg.InboundMessage(0, content = message.getBytes(header = False))
+
+    l2 = message.read()
+    return l2 == tuple(l)
+
 
 
 tests = [test_message_int,
-         test_message_float,
-         test_message_boolean,
          test_message_string,
-         test_message_mixed,
+         test_message_list,
+         test_message_list2,
+         test_message_list3,
         ]
 
 if __name__ == "__main__":
