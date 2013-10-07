@@ -5,6 +5,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler;
+
 public class OutboundMessage {
 
 	//type of the message
@@ -104,112 +106,163 @@ public class OutboundMessage {
 	/**
 	 * Writes a Boolean in the message content
 	 * @param b the boolean to write
+	 * @throws IOException 
 	 */
-	public void appendBoolean(Boolean b){
-		try {
-			dout.writeBoolean(b);
-			dout.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void appendBoolean(Boolean b) throws IOException{
+		dout.writeByte(MessageUtils.BOOL_TYPE);
+		dout.writeBoolean(b);
+		dout.flush();
 	}
 
 	/**
 	 * Write a string in the message content as a sequence of characters
 	 * @param s the string to write
+	 * @throws IOException 
 	 */
-	public void appendString(String s){
-		try {
-			dout.writeUTF(s);
-			dout.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void appendString(String s) throws IOException{
+		dout.writeByte(MessageUtils.STRING_TYPE);
+		dout.writeUTF(s);
+		dout.flush();
 	}
 
 	/**
 	 * Write a double in the message content
 	 * @param d the double to write
+	 * @throws IOException 
 	 */
-	public void appendDouble(double d){
-		try {
-			dout.writeDouble(d);
-			dout.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void appendDouble(double d) throws IOException{
+		dout.writeByte(MessageUtils.DOUBLE_TYPE);
+		dout.writeDouble(d);
+		dout.flush();
 	}
 
 	/**
 	 * Write a float in the content of the message
 	 * @param f the float to write
+	 * @throws IOException 
 	 */
-	public void appendFloat(float f){
-		try {
-			dout.writeFloat(f);
-			dout.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void appendFloat(float f) throws IOException{
+		dout.writeByte(MessageUtils.FLOAT_TYPE);
+		dout.writeFloat(f);
+		dout.flush();
 	}
 
 	/**
 	 * Writes an int in the message content
 	 * @param i the it to write
+	 * @throws IOException 
 	 */
-	public void appendInt(int i){
-		try {
-			dout.writeInt(i);
-			dout.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void appendInt(int i) throws IOException{
+		dout.writeByte(MessageUtils.INT_TYPE);
+		dout.writeInt(i);
+		dout.flush();
 	}
 
 	/**
 	 * Writes a long in the message content
 	 * @param l the long to write
+	 * @throws IOException 
 	 */
-	public void appendLong(long l){
-		try {
-			dout.writeLong(l);
-			dout.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void appendLong(long l) throws IOException{
+		dout.writeByte(MessageUtils.LONG_TYPE);
+		dout.writeLong(l);
+		dout.flush();
 	}
-	
+
 	/**
 	 * Write an ArrayList of Object in the message content
 	 * @param al the Array List to write
+	 * @throws IOException 
 	 */
-	public void appendArrayList(ArrayList<?> al){
+	public void appendArrayList(ArrayList<?> al) throws IOException{
+		dout.writeByte(MessageUtils.LIST_TYPE);
 		this.appendInt(al.size());
-		int type = MessageUtils.determineTypeInArrayList(al);
-		this.appendInt(type);
-		for (Object o : al) {
-			switch (type) {
-			case MessageUtils.AL_TYPE_INT:
-				this.appendInt(((Integer) o).intValue());
-				break;
-			case MessageUtils.AL_TYPE_STRING:
-				this.appendString(((String) o).toString());
-				break;
-			case MessageUtils.AL_TYPE_DOUBLE:
-				this.appendDouble(((Double) o).doubleValue());
-				break;
-			case MessageUtils.AL_TYPE_FLOAT:
-				this.appendFloat(((Float) o).floatValue());
-				break;
-			case MessageUtils.AL_TYPE_BOOL:
-				this.appendBoolean(((Boolean) o).booleanValue());
-				break;
-			case MessageUtils.AL_TYPE_LONG:
-				this.appendLong(((Long) o).longValue());
-				break;
-			default:
-				break;
+		if(al.size() == 0)
+			return;
+		if(this.isHeterogeneousList(al)){
+			dout.writeByte(MessageUtils.HETERO_TYPE);
+			for (Object o : al) {
+				if(MessageUtils.getTypeOfClass(o) == MessageUtils.LONG_TYPE)
+					this.appendLong(((Long) o).longValue());
+				else if(MessageUtils.getTypeOfClass(o) == MessageUtils.DOUBLE_TYPE)
+					this.appendDouble(((Double) o).doubleValue());
+				else if(MessageUtils.getTypeOfClass(o) == MessageUtils.INT_TYPE)
+					this.appendInt(((Integer) o).intValue());
+				else if(MessageUtils.getTypeOfClass(o) == MessageUtils.FLOAT_TYPE)
+					this.appendFloat(((Float) o).floatValue());
+				else if(MessageUtils.getTypeOfClass(o) == MessageUtils.BOOL_TYPE)
+					this.appendBoolean(((Boolean) o).booleanValue());
+				else if(MessageUtils.getTypeOfClass(o) == MessageUtils.LIST_TYPE)
+					this.appendArrayList((ArrayList) o);
+				else if(MessageUtils.getTypeOfClass(o) == MessageUtils.STRING_TYPE)
+					this.appendString(((String) o).toString());
+				else
+					throw new IOException("This type is not supported yet.");
 			}
 		}
+		else{
+			byte type = MessageUtils.getTypeOfClass(al.get(0));
+			dout.writeByte(type);
+			switch (type) {
+			case MessageUtils.BOOL_TYPE:
+				for (Object o : al){
+					dout.writeBoolean(((Boolean) o).booleanValue());
+				}
+				break;
+			case MessageUtils.DOUBLE_TYPE:
+				for (Object o : al){
+					dout.writeDouble(((Double) o).doubleValue());
+				}
+				break;	
+			case MessageUtils.FLOAT_TYPE:
+				for (Object o : al){
+					dout.writeFloat(((Float) o).floatValue());;
+				}
+				break;
+			case MessageUtils.INT_TYPE:
+				for (Object o : al){
+					dout.writeInt(((Integer) o).intValue());
+				}
+				break;	
+			case MessageUtils.LONG_TYPE:
+				for (Object o : al){
+					dout.writeLong(((Long) o).longValue());
+				}
+				break;
+			case MessageUtils.STRING_TYPE:
+				for (Object o : al){
+					dout.writeUTF(((String) o).toString());
+				}
+				break;
+			case MessageUtils.LIST_TYPE:
+				;
+				for (Object o : al){
+					this.appendArrayList((ArrayList) o);
+				}
+				break;	
+			default:
+				throw new IOException("This type is not supported in InboundMessage class.");
+			}
+		}
+	}
+
+
+	/**
+	 * Returns true if an ArrayList of contains heterogeneous Objects 
+	 * @param al the ArrayList to test
+	 * @return true or false
+	 * @throws IOException 
+	 */
+	private boolean isHeterogeneousList(ArrayList<?> al) throws IOException{
+		if(al.size() == 0)
+			throw new IOException("The list is empty and cannot be written.");
+		if(al.size() == 1)
+			return false;
+		Object o = al.get(0);
+		for(int i = 1; i < al.size() ; i++){
+			if(al.get(i).getClass().equals(o.getClass()) == false)
+				return true;
+		}
+		return false;
 	}
 }
