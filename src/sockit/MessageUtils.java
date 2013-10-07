@@ -1,50 +1,61 @@
 package sockit;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class MessageUtils {
-	// type int
-	static final int AL_TYPE_INT = 0;
-	// type int
-	static final int AL_TYPE_STRING = 1;
-	// type double
-	static final int AL_TYPE_DOUBLE = 2;
-	// type float
-	static final int AL_TYPE_FLOAT = 3;
-	// type bool
-	static final int AL_TYPE_BOOL = 4;
-	// type long
-	static final int AL_TYPE_LONG = 5;
-	
+
+	// fake ascii motherfucking lord of god
+	public static final byte LONG_TYPE = 108;
+	public static final byte DOUBLE_TYPE = 100;
+	public static final byte INT_TYPE = 105;
+	public static final byte FLOAT_TYPE = 102;
+	public static final byte BOOL_TYPE = 63;
+	public static final byte LIST_TYPE = 84;
+	public static final byte STRING_TYPE = 115;
+	//public static final byte DICT_TYPE = 68;
+	public static final byte HETERO_TYPE = 120;
+
 	/**
-	 * Return the type of the first object inside the ArrayList
-	 * @param al the ArrayList to test
-	 * @return the type as an int
+	 * Throws an exception if the type is not yet supported
+	 * @param type The type to test.
+	 * @throws IOException If the type is not supported yet.
 	 */
-	public static int determineTypeInArrayList(ArrayList<?> al){
-		int type = -1;
-		if(al.size() > 0){
-			// test the first one only
-			Object o = al.get(0);
-			if (o.getClass().equals(Integer.class)) {
-				type = 0;
-			}
-			else if (o.getClass().equals(String.class)) {
-				type = 1;
-			}
-			else if (o.getClass().equals(Double.class)) {
-				type = 2;
-			}
-			else if (o.getClass().equals(Float.class)) {
-				type = 3;
-			}
-			else if (o.getClass().equals(Boolean.class)) {
-				type = 4;
-			}
-			else if (o.getClass().equals(Long.class)) {
-				type = 5;
-			}
-		}
-		return type;
+	public static void isTypeExist(byte type) throws IOException{
+		if(type != LONG_TYPE &&
+				type != DOUBLE_TYPE &&
+				type != INT_TYPE &&
+				type != FLOAT_TYPE &&
+				type != BOOL_TYPE &&
+				type != LIST_TYPE &&
+				type != STRING_TYPE &&
+				//type != DICT_TYPE &&
+				type != HETERO_TYPE)
+			throw new IOException("This type is not yet supported.");
+	}
+
+	/**
+	 * 
+	 * @param o
+	 * @return
+	 * @throws IOException
+	 */
+	public static byte getTypeOfClass(Object o) throws IOException{
+		if(o.getClass().equals(Long.class))
+			return LONG_TYPE;
+		else if(o.getClass().equals(Double.class))
+			return DOUBLE_TYPE;
+		else if(o.getClass().equals(Integer.class))
+			return INT_TYPE;
+		else if(o.getClass().equals(Float.class))
+			return FLOAT_TYPE;
+		else if(o.getClass().equals(Boolean.class))
+			return BOOL_TYPE;
+		else if(o.getClass().equals(ArrayList.class))
+			return LIST_TYPE;
+		else if(o.getClass().equals(String.class))
+			return STRING_TYPE;
+		else
+			throw new IOException("This type is not supported yet.");
 	}
 }

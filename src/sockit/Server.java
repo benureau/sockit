@@ -13,255 +13,246 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class Server {
 
-	// the main thread of the server
-	ServerThread thread;
-	// a lock just for fun
-	private ReentrantLock lock;
-	
-	public Server(){
-		this.lock = new ReentrantLock();
-		this.thread = null;
-	}
+    // the main thread of the server
+    ServerThread thread;
+    // a lock just for fun
+    private ReentrantLock lock;
 
-	/**
-	 * Starts the server listening on a specified port number
-	 * @param port the port where to listen
-	 * @return true if the server starts correctly, false otherwise
-	 */
-	public boolean start(int port) {
-		this.lock.lock();
-		if(this.thread != null){
-			this.lock.unlock();
-			return false;
-		}
-		this.thread = new ServerThread(port);
-		this.thread.start();
-		this.lock.unlock();
-		return true;
-	}
+    public Server(){
+        this.lock = new ReentrantLock();
+        this.thread = null;
+    }
 
-	/**
-	 * Stops the server
-	 * @return true if the server is correctly stopped
-	 */
-	public boolean stop() {
-		this.lock.lock();
-		if(this.thread == null){
-			this.lock.unlock();
-			return false;
-		}
-		this.thread.close();
-		this.thread = null;
-		this.lock.unlock();
-		return true;
-	}
+    /**
+     * Starts the server listening on a specified port number
+     * @param port the port where to listen
+     * @return true if the server starts correctly, false otherwise
+     */
+    public boolean start(int port) {
+        this.lock.lock();
+        if(this.thread != null){
+            this.lock.unlock();
+            return false;
+        }
+        this.thread = new ServerThread(port);
+        this.thread.start();
+        this.lock.unlock();
+        return true;
+    }
 
-	/**
-	 * Sends a message to the connected client
-	 * @param message the message to send
-	 * @return true if the message is sent, false otherwise
-	 */
-	public boolean send(OutboundMessage message) {
-		this.lock.lock();
-		if(this.thread == null){
-			this.lock.unlock();
-			return false;
-		}
-		boolean b = this.thread.send(message);
-		this.lock.unlock();
-		return b;
-	}
+    /**
+     * Stops the server
+     * @return true if the server is correctly stopped
+     */
+    public boolean stop() {
+        this.lock.lock();
+        if(this.thread == null){
+            this.lock.unlock();
+            return false;
+        }
+        this.thread.close();
+        this.thread = null;
+        this.lock.unlock();
+        return true;
+    }
 
-	/**
-	 * Returns a message received. If no message are received in background, the method wait for a new one...
-	 * @return the message received or null
-	 */
-	public InboundMessage receive() {
-		this.lock.lock();
-		if(this.thread == null){
-			this.lock.unlock();
-			return null;
-		}
-		InboundMessage r = this.thread.receive();
-		this.lock.unlock();
-		return r;
-	}
-	
-	/**
-	 * Returns the number of messages received
-	 * @return the number of messages received
-	 */
-	public int getNumberOfMessages(){
-		this.lock.lock();
-		int n = thread.getNumberOfMessages();
-		this.lock.unlock();
-		return n;
-	}
-	
-	/**
-	 * This private class implement the server of the thread witch receive in background all the message
-	 * @author pfudal
-	 *
-	 */
-	private class ServerThread extends Thread {
-		
-		// number of client at the same time
-		private static final int BACKLOG = 1;
-		
-		// indicates if listening or not
-		private boolean isReady = false;
-		// the port of the server
-		private int port = 0;
-		// the server socket
-		private ServerSocket server = null;
-		// lock to protect the queue containing messages received
-		private ReentrantLock queueLock = null;
-		// the queue containing received message
-		private Vector<InboundMessage> queue;
-		// input and output stream
-		private InputStream in = null;
-		private OutputStream out = null;
-		
-		/**
-		 * Constructors of the server thread
-		 */
-		public ServerThread(int port){
-			this.port = port;
-			this.queueLock = new ReentrantLock();
-			this.queue = new Vector<InboundMessage>();
-		}
-		
-		/**
-		 * Extract the first message in the queue
-		 * @return the message or null if the queue is empty
-		 */
-		public InboundMessage receive() {
-			if(isReady == false) {
-                //System.out.println("isReady was False");
-				return null;}
-			this.queueLock.lock();
-			int size = this.queue.size();
-			if(size == 0){
+    /**
+     * Sends a message to the connected client
+     * @param message the message to send
+     * @return true if the message is sent, false otherwise
+     */
+    public boolean send(OutboundMessage message) {
+        this.lock.lock();
+        if(this.thread == null){
+            this.lock.unlock();
+            return false;
+        }
+        boolean b = this.thread.send(message);
+        this.lock.unlock();
+        return b;
+    }
+
+    /**
+     * Returns a message received. If no message are received in background, the method wait for a new one...
+     * @return the message received or null
+     */
+    public InboundMessage receive() {
+        this.lock.lock();
+        if(this.thread == null){
+            this.lock.unlock();
+            return null;
+        }
+        InboundMessage r = this.thread.receive();
+        this.lock.unlock();
+        return r;
+    }
+
+    /**
+     * Returns the number of messages received
+     * @return the number of messages received
+     */
+    public int getNumberOfMessages(){
+        this.lock.lock();
+        int n = thread.getNumberOfMessages();
+        this.lock.unlock();
+        return n;
+    }
+
+    /**
+     * This private class implement the server of the thread witch receive in background all the message
+     * @author pfudal
+     *
+     */
+    private class ServerThread extends Thread {
+
+        // number of client at the same time
+        private static final int BACKLOG = 1;
+
+        // indicates if listening or not
+        private boolean isReady = false;
+        // the port of the server
+        private int port = 0;
+        // the server socket
+        private ServerSocket server = null;
+        // lock to protect the queue containing messages received
+        private ReentrantLock queueLock = null;
+        // the queue containing received message
+        private Vector<InboundMessage> queue;
+        // input and output stream
+        private InputStream in = null;
+        private OutputStream out = null;
+
+        /**
+         * Constructors of the server thread
+         */
+        public ServerThread(int port){
+            this.port = port;
+            this.queueLock = new ReentrantLock();
+            this.queue = new Vector<InboundMessage>();
+        }
+
+        /**
+         * Extract the first message in the queue
+         * @return the message or null if the queue is empty
+         */
+        public InboundMessage receive() {
+            if(isReady == false) {
+                System.out.println("isReady was False");
+                return null;}
+            this.queueLock.lock();
+            int size = this.queue.size();
+            if(size == 0){
                 System.out.println("size was null");
-				this.queueLock.unlock();
-				return null;
-			}
-			else{
-				InboundMessage answer = this.queue.firstElement();
-				this.queue.remove(0);
-				this.queueLock.unlock();
-				return answer;
-			}
-		}
-		
-		/**
-		 * Returns the number of message in the queue
-		 * @return the size of the queue
-		 */
-		public int getNumberOfMessages(){
-			this.queueLock.lock();
-			int s = this.queue.size();
-			this.queueLock.unlock();
-			return s;
-		}
+                this.queueLock.unlock();
+                return null;
+            }
+            else{
+                InboundMessage answer = this.queue.firstElement();
+                this.queue.remove(0);
+                this.queueLock.unlock();
+                return answer;
+            }
+        }
 
-		/**
-		 * Send a message through the socket
-		 * @param message the message to send
-		 * @return
-		 */
-		public boolean send(OutboundMessage message) {
-			if(isReady == false)
-				return false;
-			try {
-				out.write(message.getBytes(), 0, (int) message.getBytes().length);
-				out.flush();
-				return true;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return false;
-		}
+        /**
+         * Returns the number of message in the queue
+         * @return the size of the queue
+         */
+        public int getNumberOfMessages(){
+            this.queueLock.lock();
+            int s = this.queue.size();
+            this.queueLock.unlock();
+            return s;
+        }
 
-		/**
-		 * Closes the socket. It is useful to do that before an interrupt
-		 */
-		public void close(){
-			try {
-				this.server.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			this.interrupt();
-		}
-		
-		/**
-		 * The main method of the thread (call when starts)
-		 */
-		public void run() {
-			Socket s = null;
-			try {
-				// creating the socket (bind and listen included)
-				this.server = new ServerSocket(this.port, BACKLOG);
-				
+        /**
+         * Send a message through the socket
+         * @param message the message to send
+         * @return
+         */
+        public boolean send(OutboundMessage message) {
+            if(isReady == false)
+                return false;
+            try {
+                out.write(message.getBytes(), 0, (int) message.getBytes().length);
+                out.flush();
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return false;
+        }
+
+        /**
+         * Closes the socket. It is useful to do that before an interrupt
+         */
+        public void close(){
+            try {
+                this.server.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.interrupt();
+        }
+
+        /**
+         * The main method of the thread (call when starts)
+         */
+        public void run() {
+            Socket s = null;
+            try {
+                // creating the socket (bind and listen included)
+                this.server = new ServerSocket(this.port, BACKLOG);
+
                 while(true) {
                     if (this.isReady == false) {
-        				System.out.println("STATUS : Accepting new connections");
-        				s = server.accept();
-        				this.in = s.getInputStream();
-        				this.out = s.getOutputStream();
-        				this.isReady = true;
-        				System.out.println("STATUS : Accepting messages");
+                        System.out.println("STATUS : Accepting new connections on port "+this.port);
+                        s = server.accept();
+                        this.in = s.getInputStream();
+                        this.out = s.getOutputStream();
+                        this.isReady = true;
+                        System.out.println("STATUS : Accepting messages");
                     }
-                    
-    				boolean running = true;
+
+                    boolean running = true;
 
                     while(running){
-    					// Reading the header of an input message
+                        // Reading the header of an input message
                         byte[] header = new byte[InboundMessage.HEADER_SIZE];
-    					int len = in.read(header, 0, InboundMessage.HEADER_SIZE);
-					
+                        int len = in.read(header, 0, InboundMessage.HEADER_SIZE);
+
                         if(len == InboundMessage.HEADER_SIZE){
-    						ByteArrayInputStream bis = new ByteArrayInputStream(header);
-    						DataInputStream dis = new DataInputStream(bis);
-    						int length = dis.readInt();
-    						int type = dis.readInt();
-        					// Reading the content of an input message					
-                            int toRead = length - InboundMessage.HEADER_SIZE;
-    						int cursor = 0;
-                            byte[] content = new byte[toRead];
-    						while(toRead > 0){
-    							int r = in.read(content, cursor, toRead);
-    							toRead = toRead - r;
-    							cursor = cursor + r;
-    							
-    						}
-                        	if(toRead == 0){
-            					// Adding it to the queue					
+                            ByteArrayInputStream bis = new ByteArrayInputStream(header);
+                            DataInputStream dis = new DataInputStream(bis);
+                            int length = dis.readInt();
+                            int type = dis.readInt();
+                            // Reading the content of an input message
+                            byte[] content = new byte[length - InboundMessage.HEADER_SIZE];
+                            len = in.read(content, 0, length - InboundMessage.HEADER_SIZE);
+
+                            if(len == length - InboundMessage.HEADER_SIZE){
+                                // Adding it to the queue
                                 InboundMessage message = new InboundMessage(type,content);
-    							this.queueLock.lock();
-    							this.queue.add(message);
-    							this.queueLock.unlock();
-    						}
-    						else{
-                				System.out.println("ERROR : Received message with wrong content format, of type "+type+" and lenght "+length+"."+ " -> "+len);
-                				System.out.println("READ MORE : " + len);
+                                this.queueLock.lock();
+                                this.queue.add(message);
+                                this.queueLock.unlock();
+                            }
+                            else{
+                                System.out.println("ERROR : Received message with wrong content format, of type "+type+" and lenght "+length+".");
                                 running = false;
                                 this.isReady = false;
-                                s.close();
-    						}
-    					}
-    					else{
-            				System.out.println("STATUS : Connection was closed");
-    						running = false;
+                            }
+                        }
+                        else{
+                            System.out.println("STATUS : Connection was closed because "+len);
+                            running = false;
                             this.isReady = false;
-                            s.close();
-    					}
-    				}
-                }            
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -21,14 +21,24 @@ public class ExampleDataStream {
 	// this class allows to run the client in a thread
 	public class ClientThread extends Thread{
 		public void run(){
-			ClientTest();
+			try {
+				ClientTest();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
 	// this class allows to run the server in a thread
 	public class ServerThread extends Thread{
 		public void run(){
-			ServerTest();
+			try {
+				ServerTest();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -55,7 +65,7 @@ public class ExampleDataStream {
 	}
 	
 	// server code
-	public static void ServerTest(){
+	public static void ServerTest() throws IOException{
 		Server s = new Server();
 		s.start(PORT);
 		System.out.println("SERVER -> started");
@@ -126,7 +136,7 @@ public class ExampleDataStream {
 	}
 	
 	// client code
-	public static void ClientTest(){
+	public static void ClientTest() throws IOException{
 		Client c = new Client();
 		boolean b = c.connect("127.0.0.1", PORT);
 		if(b == true){
