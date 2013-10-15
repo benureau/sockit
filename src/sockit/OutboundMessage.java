@@ -202,10 +202,19 @@ public class OutboundMessage {
 	 */
 	public void appendList(List<?> al) throws IOException{
 		dout.writeByte(MessageUtils.LIST_TYPE);
+		appendListUntyped(al);
+	}
+
+	/**
+	 * 
+	 * @param al
+	 * @throws IOException
+	 */
+	private void appendListUntyped(List<?> al) throws IOException {
 		dout.writeInt(al.size());
 		if(al.size() == 0)
 			return;
-		if(true || this.isHeterogeneousList(al)){
+		if(this.isHeterogeneousList(al)){
 			dout.writeByte(MessageUtils.HETERO_TYPE);
 			for (Object o : al) {
 				this.appendElement(o);
@@ -242,15 +251,19 @@ public class OutboundMessage {
 				break;
 			case MessageUtils.STRING_TYPE:
 				for (Object o : al){
-    				dout.writeInt(((String) o).length());
+					dout.writeInt(((String) o).length());
 					dout.writeUTF(((String) o).toString());
 				}
 				break;
 			case MessageUtils.LIST_TYPE:
-				;
 				for (Object o : al){
-					this.appendList((List) o);
+					this.appendListUntyped((List) o);
 				}
+				break;
+			case MessageUtils.DICT_TYPE:
+				for(Object o : al)
+					this.appendMap((Map) o);
+
 				break;
 			default:
 				throw new IOException("This type is not supported in InboundMessage class.");
@@ -277,11 +290,15 @@ public class OutboundMessage {
 		}
 		return false;
 	}
-	
+
+	/**
+	 * 
+	 * @param map
+	 * @throws IOException
+	 */
 	public void appendMap(Map<String, Object> map) throws IOException{
 		dout.writeByte(MessageUtils.DICT_TYPE);
 		dout.writeInt(map.size());
-		
 		for (Map.Entry<String, Object> entry : map.entrySet()){
 			String key = entry.getKey();
 			Object value = entry.getValue();

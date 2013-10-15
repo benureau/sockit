@@ -140,7 +140,7 @@ public class Client {
     private boolean unprotectedSend(OutboundMessage message){
         if(isConnected){
             try {
-                System.out.println("J'envoie " + message.getBytes().length + " bytes");
+                //System.out.println("J'envoie " + message.getBytes().length + " bytes");
                 out.write(message.getBytes(), 0, (int) message.getBytes().length);
                 out.flush();
                 return true;

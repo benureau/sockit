@@ -37,33 +37,37 @@ public class Test {
 
 		// 1
 		ArrayList<Object> al1 = new ArrayList<Object>();
-		al1.add(new String("Je porte un string en léopard."));
-		al1.add(new Double(Math.PI));
-		al1.add(new Boolean(true));
-		ArrayList<Double> al2 = new ArrayList<Double>();
-		for(int i = 0; i < 100 ; i++)
-			al2.add(new Double(i * Math.PI));
+		ArrayList<Integer> al2 = new ArrayList<Integer>();
+		for(int j = 0; j < 2 ; j++)
+			al2.add(new Integer(j));
 		al1.add(al2);
+		
+		ArrayList<Integer> al3 = new ArrayList<Integer>();
+		for(int j = 0; j < 3 ; j++)
+			al3.add(new Integer(j));
+		al1.add(al3);
+		
+		ArrayList<Integer> al4 = new ArrayList<Integer>();
+		for(int j = 0; j < 4 ; j++)
+			al4.add(new Integer(j));
+		al1.add(al4);
 		
 		// 2
 		OutboundMessage om = new OutboundMessage();
-		om.appendArrayList(al1);
-		om.appendInt(1984);
+		om.appendList(al1);
 		
 		// 3
 		InboundMessage im = new InboundMessage(om.getBytes());
 		
 		// 4
-		ArrayList<?> al3 = im.readArrayList();
-		System.out.println(al3.get(0));
-		System.out.println(al3.get(1));
-		System.out.println(al3.get(2));
-		ArrayList<?> al4 = (ArrayList<?>) al3.get(3);
-		for (Object o : al4) {
-			System.out.println(((Double) o).doubleValue());
+		ArrayList<?> al5 = im.readArrayList();
+		for (Object p : al5){
+			System.out.println("-- begin list");
+			for (Object o : ((ArrayList<Object>)p)) {
+				System.out.println(((Integer) o).intValue());
+			}
+			System.out.println("-- end list");
 		}
-		int a = im.readInt();
-		System.out.println(a);
 		
 		System.out.println("...end of tests");
 	}
@@ -97,7 +101,7 @@ public class Test {
 		
 	}
 
-	/**
+	/**	
 	 * @param args
 	 * @return 
 	 */

@@ -160,7 +160,7 @@ public class InboundMessage {
      */
     private Object getNextElement(byte expected) throws IOException {
         byte type = din.readByte();
-        System.out.println("type : "+type);
+        //System.out.println("type : "+type);
         if(type != expected)
             throw new IOException("The next element type ("+type+") is not the expected one ("+expected+").");
         return readElement(type);
@@ -232,13 +232,13 @@ public class InboundMessage {
         MessageUtils.isTypeExist(sub_type);
         ArrayList<Object> ret = new ArrayList<Object>();
         if(sub_type == MessageUtils.HETERO_TYPE){
-            System.out.println("hetero");
+            //System.out.println("hetero");
             for(int i = 0; i < size; i++){
                 ret.add(getNextElement());
             }
         }
         else{
-            System.out.println("homo");
+            //System.out.println("homo");
             switch (sub_type) {
             case MessageUtils.BOOL_TYPE:
                 for(int i = 0; i < size; i++){
@@ -267,13 +267,14 @@ public class InboundMessage {
                 break;
             case MessageUtils.STRING_TYPE:
                 for(int i = 0; i < size; i++){
+                	int size2 = din.readInt();
                     ret.add((Object) new String(din.readUTF()));
                 }
                 break;
             case MessageUtils.LIST_TYPE:
-                int sub_size = din.readInt();
-                byte sub_sub_type = din.readByte();
                 for(int i = 0; i < size; i++){
+                	int sub_size = din.readInt();
+                    byte sub_sub_type = din.readByte();
                     ret.add(this.readArrayList(sub_sub_type, sub_size));
                 }
                 break;
