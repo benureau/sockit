@@ -227,18 +227,23 @@ public class Server {
                             int length = dis.readInt();
                             int type = dis.readInt();
                             // Reading the content of an input message
-                            byte[] content = new byte[length - InboundMessage.HEADER_SIZE];
-                            len = in.read(content, 0, length - InboundMessage.HEADER_SIZE);
+                            int toRead = length - InboundMessage.HEADER_SIZE ;
+                            byte[] content = new byte[toRead];
+                            int cursor = 0;
+                            while(cursor < toRead) {
+                                cursor += in.read(content, cursor, toRead - cursor);
+                            }
 
-                            if(len == length - InboundMessage.HEADER_SIZE){
+                            if(cursor == length - InboundMessage.HEADER_SIZE){
+                                System.out.println("STATUS : Received message of type "+type+" and lenght "+length+".");
                                 // Adding it to the queue
                                 InboundMessage message = new InboundMessage(type,content);
                                 this.queueLock.lock();
                                 this.queue.add(message);
                                 this.queueLock.unlock();
                             }
-                            else{
-                                System.out.println("ERROR : Received message with wrong content format, of type "+type+" and lenght "+length+".");
+                            else {
+                                System.out.println("ERROR : Received message with wrong content format, of type "+type+" or length "+length+".");
                                 running = false;
                                 this.isReady = false;
                             }

@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name = "Sockit",
-    version = "0.1",
+    version = "1.0.0",
     author = "Paul Fudal and Fabien Benureau",
     author_email = "paul.fudal@inria.fr",
     description = ("A python implementation of client of the Java socket library"),

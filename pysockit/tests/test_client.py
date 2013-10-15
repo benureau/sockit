@@ -16,20 +16,22 @@ HELLO_TYPE = 0
 BYE_TYPE   = 1
 FIBO_TYPE  = 2
 
+raise DeprecationWarning("test is not up-to-date with code")
+
 def clientTest():
-    
+
     c = client.Client()
     b = c.connect(IP, PORT)
-    
+
     try:
         if b:
             print("CLIENT -> started")
-            
+
             hello = OutputMessage()
             hello.type = HELLO_TYPE
             hello.appendString("Hello server !")
             c.send(hello)
-            
+
             for i in range(41):
                 f = OutputMessage()
                 f.type = FIBO_TYPE
@@ -61,4 +63,3 @@ def clientTest():
 
 if __name__ == "__main__":
     clientTest()
-        

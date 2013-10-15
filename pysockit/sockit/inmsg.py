@@ -59,11 +59,10 @@ class InboundMessage(object):
         self.checkForOverflow(size)
         s = self.content[self.cursor:self.cursor+size]
         self.cursor  += size
-        return s
+        return UTF2str(s)
 
     def _readList(self, *args):
         """ Reads a tuple of elements in the content of the message"""
-        self.checkForOverflow(intStruct.size)
         list_size = self._read('i')
         type_str  = self._read('c')
         if type_str == 'x':
@@ -72,17 +71,15 @@ class InboundMessage(object):
             f_read = InboundMessage._readdict[type_str]
             return tuple(f_read(self, type_str) for _ in range(list_size))
 
-    # def _readDict(self, keytype, valueType):
-    #     """ Reads a dictionary in the content of the message
-    #         :param keytype:    the type of the key, amongst 'int', 'boolean',
-    #                            'long', 'float', 'double', 'string', 'list'.
-    #         :param valuetype:  same for values
-    #     """
-    #     self.checkForOverflow(intStruct.size)
-    #     dict_size = self.readInt()
-    #     key_f   = getattr(self, 'read'+keytype.capitalize())
-    #     value_f = getattr(self, 'read'+valuetype.capitalize())
-    #     return {key_f() : value_f() for _ in range(dict_size)}
+    def _readDict(self, *args):
+        """ Reads a dict with string keys"""
+        d = {}
+        size  = self._read('i')
+        for i in range(size):
+            key = self.read()
+            value = self.read()
+            d[key] = value
+        return d
 
     _readdict = {'?': _read,
                  'i': _read,
@@ -90,5 +87,6 @@ class InboundMessage(object):
                  'd': _read,
                  'l': _read,
                  's': _readString,
-                 'T': _readList}
+                 'T': _readList,
+                 'D': _readDict}
 

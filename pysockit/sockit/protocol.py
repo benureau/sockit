@@ -28,3 +28,14 @@ structdict = {'?': boolStruct,
               'l': longStruct,
               'c': charStruct}
 
+
+utfStruct   = struct.Struct("!H")
+
+def str2UTF(s):
+    utf8 = s.encode('utf-8')
+    length = len(utf8)
+    format = '!' + str(length) + 's'
+    return utfStruct.pack(length) + struct.pack(format, utf8)
+
+def UTF2str(s):
+    return s[2:]

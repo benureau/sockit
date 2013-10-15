@@ -3,7 +3,9 @@ package sockit;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 
 import com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler;
 
@@ -24,7 +26,7 @@ public class OutboundMessage {
 	public OutboundMessage() {
 		content = new ByteArrayOutputStream();
 		dout = new DataOutputStream(content);
-	}    
+	}
 
 	/**
 	 * Constructs a message with a specified type
@@ -106,7 +108,7 @@ public class OutboundMessage {
 	/**
 	 * Writes a Boolean in the message content
 	 * @param b the boolean to write
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public void appendBoolean(Boolean b) throws IOException{
 		dout.writeByte(MessageUtils.BOOL_TYPE);
@@ -117,10 +119,11 @@ public class OutboundMessage {
 	/**
 	 * Write a string in the message content as a sequence of characters
 	 * @param s the string to write
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public void appendString(String s) throws IOException{
 		dout.writeByte(MessageUtils.STRING_TYPE);
+		dout.writeInt(s.length()+2);
 		dout.writeUTF(s);
 		dout.flush();
 	}
@@ -128,7 +131,7 @@ public class OutboundMessage {
 	/**
 	 * Write a double in the message content
 	 * @param d the double to write
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public void appendDouble(double d) throws IOException{
 		dout.writeByte(MessageUtils.DOUBLE_TYPE);
@@ -139,7 +142,7 @@ public class OutboundMessage {
 	/**
 	 * Write a float in the content of the message
 	 * @param f the float to write
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public void appendFloat(float f) throws IOException{
 		dout.writeByte(MessageUtils.FLOAT_TYPE);
@@ -150,7 +153,7 @@ public class OutboundMessage {
 	/**
 	 * Writes an int in the message content
 	 * @param i the it to write
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public void appendInt(int i) throws IOException{
 		dout.writeByte(MessageUtils.INT_TYPE);
@@ -161,7 +164,7 @@ public class OutboundMessage {
 	/**
 	 * Writes a long in the message content
 	 * @param l the long to write
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public void appendLong(long l) throws IOException{
 		dout.writeByte(MessageUtils.LONG_TYPE);
@@ -169,35 +172,43 @@ public class OutboundMessage {
 		dout.flush();
 	}
 
+
+	public void appendElement(Object obj) throws IOException {
+		if(obj instanceof Long)
+			this.appendLong(((Long) obj).longValue());
+		else if(obj instanceof Double)
+			this.appendDouble(((Double) obj).doubleValue());
+		else if(obj instanceof Integer)
+			this.appendInt(((Integer) obj).intValue());
+		else if(obj instanceof Float)
+			this.appendFloat(((Float) obj).floatValue());
+		else if(obj instanceof Boolean)
+			this.appendBoolean(((Boolean) obj).booleanValue());
+		else if(obj instanceof String)
+			this.appendString(((String) obj).toString());
+		else if(obj instanceof List)
+			this.appendList((List) obj);
+		else if(obj instanceof Map)
+			this.appendMap((Map) obj);
+		else
+			throw new IOException("This type is not supported yet.");	
+	}
+
+
 	/**
 	 * Write an ArrayList of Object in the message content
 	 * @param al the Array List to write
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	public void appendArrayList(ArrayList<?> al) throws IOException{
+	public void appendList(List<?> al) throws IOException{
 		dout.writeByte(MessageUtils.LIST_TYPE);
-		this.appendInt(al.size());
+		dout.writeInt(al.size());
 		if(al.size() == 0)
 			return;
-		if(this.isHeterogeneousList(al)){
+		if(true || this.isHeterogeneousList(al)){
 			dout.writeByte(MessageUtils.HETERO_TYPE);
 			for (Object o : al) {
-				if(MessageUtils.getTypeOfClass(o) == MessageUtils.LONG_TYPE)
-					this.appendLong(((Long) o).longValue());
-				else if(MessageUtils.getTypeOfClass(o) == MessageUtils.DOUBLE_TYPE)
-					this.appendDouble(((Double) o).doubleValue());
-				else if(MessageUtils.getTypeOfClass(o) == MessageUtils.INT_TYPE)
-					this.appendInt(((Integer) o).intValue());
-				else if(MessageUtils.getTypeOfClass(o) == MessageUtils.FLOAT_TYPE)
-					this.appendFloat(((Float) o).floatValue());
-				else if(MessageUtils.getTypeOfClass(o) == MessageUtils.BOOL_TYPE)
-					this.appendBoolean(((Boolean) o).booleanValue());
-				else if(MessageUtils.getTypeOfClass(o) == MessageUtils.LIST_TYPE)
-					this.appendArrayList((ArrayList) o);
-				else if(MessageUtils.getTypeOfClass(o) == MessageUtils.STRING_TYPE)
-					this.appendString(((String) o).toString());
-				else
-					throw new IOException("This type is not supported yet.");
+				this.appendElement(o);
 			}
 		}
 		else{
@@ -213,7 +224,7 @@ public class OutboundMessage {
 				for (Object o : al){
 					dout.writeDouble(((Double) o).doubleValue());
 				}
-				break;	
+				break;
 			case MessageUtils.FLOAT_TYPE:
 				for (Object o : al){
 					dout.writeFloat(((Float) o).floatValue());;
@@ -223,7 +234,7 @@ public class OutboundMessage {
 				for (Object o : al){
 					dout.writeInt(((Integer) o).intValue());
 				}
-				break;	
+				break;
 			case MessageUtils.LONG_TYPE:
 				for (Object o : al){
 					dout.writeLong(((Long) o).longValue());
@@ -231,15 +242,16 @@ public class OutboundMessage {
 				break;
 			case MessageUtils.STRING_TYPE:
 				for (Object o : al){
+    				dout.writeInt(((String) o).length());
 					dout.writeUTF(((String) o).toString());
 				}
 				break;
 			case MessageUtils.LIST_TYPE:
 				;
 				for (Object o : al){
-					this.appendArrayList((ArrayList) o);
+					this.appendList((List) o);
 				}
-				break;	
+				break;
 			default:
 				throw new IOException("This type is not supported in InboundMessage class.");
 			}
@@ -248,12 +260,12 @@ public class OutboundMessage {
 
 
 	/**
-	 * Returns true if an ArrayList of contains heterogeneous Objects 
+	 * Returns true if an ArrayList of contains heterogeneous Objects
 	 * @param al the ArrayList to test
 	 * @return true or false
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	private boolean isHeterogeneousList(ArrayList<?> al) throws IOException{
+	private boolean isHeterogeneousList(List<?> al) throws IOException{
 		if(al.size() == 0)
 			throw new IOException("The list is empty and cannot be written.");
 		if(al.size() == 1)
@@ -264,5 +276,17 @@ public class OutboundMessage {
 				return true;
 		}
 		return false;
+	}
+	
+	public void appendMap(Map<String, Object> map) throws IOException{
+		dout.writeByte(MessageUtils.DICT_TYPE);
+		dout.writeInt(map.size());
+		
+		for (Map.Entry<String, Object> entry : map.entrySet()){
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			this.appendString(key);
+			this.appendElement(value);			
+		}
 	}
 }

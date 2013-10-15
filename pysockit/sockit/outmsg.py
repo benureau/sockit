@@ -30,17 +30,21 @@ class OutboundMessage(object):
 
     def getBytes(self, header = True):
         """ Returns a message as a bytes array """
+        print(self.type, self.length, len(''.join(self.content)), self.content)
         if self.type is None:
             raise ValueError
+        content_array = ''.join(self.content)
+        assert self.length == len(content_array) + headerStruct.size
         if header:
             header_bytes  = headerStruct.pack(self.length, self.type)
-            return header_bytes + ''.join(self.content)
+            return header_bytes + content_array
         else:
-            return ''.join(self.content)
+            return content_array
 
     def append(self, v):
         type_str = typedict[type(v)]
         self.content.append(charStruct.pack(type_str))
+        self.length  += charStruct.size
         self._append(v)
 
     def _append(self, v):
@@ -54,9 +58,10 @@ class OutboundMessage(object):
 
     def _appendString(self, s):
         """ Add a string in the content of the message """
-        self.content.append(intStruct.pack(len(s)))
-        self.content.append(s)
-        self.length  += intStruct.size + len(s)
+        utfs = str2UTF(s)
+        self.content.append(intStruct.pack(len(utfs)))
+        self.content.append(utfs)
+        self.length  += intStruct.size + len(utfs)
 
     def _appendList(self, a):
         """ Add a string in the content of the message """
@@ -71,14 +76,23 @@ class OutboundMessage(object):
             raise ValueError, "not all type are the same"
         self.content.append(intStruct.pack(len(a)))
         self.content.append(charStruct.pack(typedict[firsttype]))
+        self.length  += intStruct.size + charStruct.size
         for e in a:
             self._append(e)
 
     def _appendHeterogeneousList(self, a):
         self.content.append(intStruct.pack(len(a)))
         self.content.append(charStruct.pack('x'))
+        self.length  += intStruct.size + charStruct.size
         for e in a:
             self.append(e)
+
+    def _appendDict(self, d):
+        self._append(len(d))
+        for k, v in d.items():
+            self.append(k)
+            self.append(v)
+
 
     _appenddict = {'?': _appendElement,
                    'i': _appendElement,
@@ -86,5 +100,6 @@ class OutboundMessage(object):
                    'd': _appendElement,
                    'l': _appendElement,
                    's': _appendString,
-                   'T': _appendList}
+                   'T': _appendList,
+                   'D': _appendDict}
 
