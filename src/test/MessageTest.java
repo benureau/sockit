@@ -22,8 +22,8 @@ public class MessageTest {
 
 	private int count = 10000;
 	private Random gen = new Random();
-	private boolean useSocket = true;
-	
+	private boolean useSocket = false;
+
 	public void testHeader(){
 		int n = (int) (Math.random() * count);
 		int size = (n * 5) + OutboundMessage.HEADER_SIZE;
@@ -276,13 +276,15 @@ public class MessageTest {
 			fail("IO exception");
 		}
 	}
-	
+
 	private InboundMessage testClientServer(OutboundMessage om) throws InterruptedException{
 		int port = 1025 + (int) (Math.random() * (54000 - 1025));
 		Server s = new Server();
 		s.start(port);
 		Client c = new Client();
-		c.connect("127.0.0.1", port);
+		Thread.sleep(500);
+		while(!c.connect("127.0.0.1", port))
+			Thread.sleep(500);
 		c.send(om);
 		boolean watch = true;
 		int cpt = 0;
