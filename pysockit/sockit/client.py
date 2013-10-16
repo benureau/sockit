@@ -135,10 +135,9 @@ class Client(object):
                     data_type = struct.unpack("!i", header[4:])[0]
 
                     #print "fetching %i more bytes" % (data_len - inmsg.HEADER_SIZE)
-                    if data_len - inmsg.HEADER_SIZE == 0:
-                        content = ""
-                    else:
-                        content = self.socket.recv(data_len - inmsg.HEADER_SIZE)
+                    content = ""
+                    while len(content) < data_len - inmsg.HEADER_SIZE:
+                        content += self.socket.recv(data_len - inmsg.HEADER_SIZE - len(content))
                     #print "received a message of lenght %i" % data_len
 
                     if len(content) != data_len - inmsg.HEADER_SIZE:

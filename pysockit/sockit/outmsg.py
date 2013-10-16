@@ -30,7 +30,7 @@ class OutboundMessage(object):
 
     def getBytes(self, header = True):
         """ Returns a message as a bytes array """
-        print(self.type, self.length, len(''.join(self.content)), self.content)
+        #print(self.type, self.length, len(''.join(self.content)), self.content)
         if self.type is None:
             raise ValueError
         content_array = ''.join(self.content)
