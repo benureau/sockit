@@ -173,7 +173,12 @@ public class OutboundMessage {
 	}
 
 
-	public void appendElement(Object obj) throws IOException {
+	/**
+	 * 
+	 * @param obj
+	 * @throws IOException
+	 */
+	private void appendElement(Object obj) throws IOException {
 		if(obj instanceof Long)
 			this.appendLong(((Long) obj).longValue());
 		else if(obj instanceof Double)
@@ -305,5 +310,13 @@ public class OutboundMessage {
 			this.appendString(key);
 			this.appendElement(value);			
 		}
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getLength() {
+		return OutboundMessage.HEADER_SIZE + dout.size();
 	}
 }

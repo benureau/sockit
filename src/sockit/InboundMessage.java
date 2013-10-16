@@ -40,7 +40,7 @@ public class InboundMessage {
         ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
         DataInputStream dis = new DataInputStream(bis);
         try {
-            int length = dis.readInt();
+            this.length = dis.readInt();
             this.type = dis.readInt();
             byte[] content = new byte[length - InboundMessage.HEADER_SIZE];
             for(int i = 0 ; i < length - InboundMessage.HEADER_SIZE ; i++)
@@ -138,6 +138,15 @@ public class InboundMessage {
     public ArrayList<Object> readArrayList() throws IOException{
         return (ArrayList<Object>) getNextElement(MessageUtils.LIST_TYPE);
     }
+    
+    /**
+     * 
+     * @return
+     * @throws IOException 
+     */
+	public HashMap<String, Object> readMap() throws IOException {
+		return (HashMap<String, Object>) getNextElement(MessageUtils.DICT_TYPE);
+	}
 
 
     /**
@@ -147,7 +156,7 @@ public class InboundMessage {
      */
     private Object getNextElement() throws IOException {
         byte type = din.readByte();
-        System.out.println("type : "+type);
+        //System.out.println("type : "+type);
         MessageUtils.isTypeExist(type);
         return readElement(type);
     }
@@ -208,15 +217,19 @@ public class InboundMessage {
         return o;
     }
 
-
+    /**
+     * 
+     * @param size
+     * @return
+     * @throws IOException
+     */
     private HashMap<String, Object> readHashMap(int size) throws IOException {
         HashMap<String, Object> d = new HashMap<String, Object>();
-        for (int i = 0; i <= size; i++) {
+        for (int i = 0; i < size; i++) {
             String key   = (String) this.getNextElement(MessageUtils.STRING_TYPE);
             Object value = this.getNextElement();
             d.put(key, value);
         }
-
         return d;
     }
 
@@ -284,5 +297,4 @@ public class InboundMessage {
         }
         return ret;
     }
-
 }
