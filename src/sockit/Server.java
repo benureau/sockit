@@ -206,12 +206,12 @@ public class Server {
 
                 while(true) {
                     if (this.isReady == false) {
-                        System.out.println("STATUS : Accepting new connections on port "+this.port);
+                        System.out.println("STATUS: accepting new connections on port "+this.port);
                         s = server.accept();
                         this.in = s.getInputStream();
                         this.out = s.getOutputStream();
                         this.isReady = true;
-                        System.out.println("STATUS : Accepting messages");
+                        System.out.println("STATUS: accepting messages");
                     }
 
                     boolean running = true;
@@ -235,7 +235,7 @@ public class Server {
                             }
 
                             if(cursor == length - InboundMessage.HEADER_SIZE){
-                                System.out.println("STATUS : Received message of type "+type+" and lenght "+length+".");
+                                System.out.println("STATUS: received message of type "+type+" and lenght "+length+".");
                                 // Adding it to the queue
                                 InboundMessage message = new InboundMessage(type,content);
                                 this.queueLock.lock();

@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 
-import com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler;
-
 public class OutboundMessage {
 
 	//type of the message
