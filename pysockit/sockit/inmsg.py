@@ -6,7 +6,7 @@
 import types
 import struct
 
-from protocol import *
+from .protocol import *
 
 
 class InboundMessage(object):
@@ -38,7 +38,7 @@ class InboundMessage(object):
         :raise ValueError: if the read exceed the content range.
         """
         if len(self.content) < self.cursor + size:
-            raise ValueError, "Read exceed content range."
+            raise ValueError("Read exceed content range.")
 
     def _read(self, type_str):
         """ Read an element, provided a format"""

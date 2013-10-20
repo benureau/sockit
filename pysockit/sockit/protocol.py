@@ -12,21 +12,20 @@ longStruct   = struct.Struct("!l")
 floatStruct  = struct.Struct("!f")
 doubleStruct = struct.Struct("!d")
 
-typedict = {types.BooleanType: '?',
-            types.IntType:     'i',
-            types.FloatType:   'd',
-            types.LongType:    'l',
-            types.StringType:  's',
-            types.ListType:    'T',
-            types.TupleType:   'T',
-            types.DictType:    'D'}
+typedict = {bool : b'?',
+            int  : b'i',
+            float: b'd',
+            str  : b's',
+            list : b'T',
+            tuple: b'T',
+            dict : b'D'}
 
-structdict = {'?': boolStruct,
-              'i': intStruct,
-              'f': floatStruct,
-              'd': doubleStruct,
-              'l': longStruct,
-              'c': charStruct}
+structdict = {b'?': boolStruct,
+              b'i': intStruct,
+              b'f': floatStruct,
+              b'd': doubleStruct,
+              b'l': longStruct,
+              b'c': charStruct}
 
 
 utfStruct   = struct.Struct("!H")

@@ -4,7 +4,7 @@ For consistency, the API is as similar as possible to the Java ones.
 However, some methods are useless in the Python one (such as checkFreeSpace())
 """
 
-from protocol import *
+from .protocol import *
 
 
 class OutboundMessage(object):
@@ -73,7 +73,7 @@ class OutboundMessage(object):
     def _appendHomogeneousList(self, a):
         firsttype = type(a[0])
         if not all(firsttype == type(e) for e in a):
-            raise ValueError, "not all type are the same"
+            raise ValueError("not all type are the same")
         self.content.append(intStruct.pack(len(a)))
         self.content.append(charStruct.pack(typedict[firsttype]))
         self.length  += intStruct.size + charStruct.size
@@ -82,7 +82,7 @@ class OutboundMessage(object):
 
     def _appendHeterogeneousList(self, a):
         self.content.append(intStruct.pack(len(a)))
-        self.content.append(charStruct.pack('x'))
+        self.content.append(charStruct.pack(b'x'))
         self.length  += intStruct.size + charStruct.size
         for e in a:
             self.append(e)
@@ -94,12 +94,11 @@ class OutboundMessage(object):
             self.append(v)
 
 
-    _appenddict = {'?': _appendElement,
-                   'i': _appendElement,
-                   'f': _appendElement,
-                   'd': _appendElement,
-                   'l': _appendElement,
-                   's': _appendString,
-                   'T': _appendList,
-                   'D': _appendDict}
+    _appenddict = {b'?': _appendElement,
+                   b'i': _appendElement,
+                   b'f': _appendElement,
+                   b'd': _appendElement,
+                   b's': _appendString,
+                   b'T': _appendList,
+                   b'D': _appendDict}
 

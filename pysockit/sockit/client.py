@@ -9,7 +9,7 @@ import traceback
 import struct
 import select
 
-import inmsg
+from . import inmsg
 
 class Client(object):
 
