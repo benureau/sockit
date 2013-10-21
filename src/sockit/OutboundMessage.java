@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 
 public class OutboundMessage {
@@ -299,11 +300,11 @@ public class OutboundMessage {
 	 * @param map
 	 * @throws IOException
 	 */
-	public void appendMap(Map<String, Object> map) throws IOException{
+	public void appendMap(Map<?, ?> map) throws IOException{
 		dout.writeByte(MessageUtils.DICT_TYPE);
 		dout.writeInt(map.size());
-		for (Map.Entry<String, Object> entry : map.entrySet()){
-			String key = entry.getKey();
+		for (Entry<?, ?> entry : map.entrySet()){
+			String key = (String) entry.getKey();
 			Object value = entry.getValue();
 			this.appendString(key);
 			this.appendElement(value);			

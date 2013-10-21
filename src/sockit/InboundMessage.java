@@ -136,8 +136,8 @@ public class InboundMessage {
      * @param al the Array List to write
      * @throws IOException Oh yeah.
      */
-    public ArrayList<Object> readArrayList() throws IOException{
-        return (ArrayList<Object>) getNextElement(MessageUtils.LIST_TYPE);
+    public ArrayList<?> readArrayList() throws IOException{
+        return (ArrayList<?>) getNextElement(MessageUtils.LIST_TYPE);
     }
     
     /**
@@ -145,8 +145,8 @@ public class InboundMessage {
      * @return
      * @throws IOException 
      */
-	public HashMap<String, Object> readMap() throws IOException {
-		return (HashMap<String, Object>) getNextElement(MessageUtils.DICT_TYPE);
+	public HashMap<?, ?> readMap() throws IOException {
+		return (HashMap<?, ?>) getNextElement(MessageUtils.DICT_TYPE);
 	}
 
 
@@ -204,8 +204,13 @@ public class InboundMessage {
             break;
         case MessageUtils.LIST_TYPE:
             int size = din.readInt();
-            byte sub_type = din.readByte();
-            o = (Object) new ArrayList<Object>(this.readArrayList(sub_type, size));
+            if(size > 0){
+            	byte sub_type = din.readByte();
+            	o = (Object) new ArrayList<Object>(this.readArrayList(sub_type, size));
+            }
+            else{
+            	o = (Object) new ArrayList<Object>();
+            }
             break;
         case MessageUtils.DICT_TYPE:
             int sized = din.readInt();

@@ -22,7 +22,7 @@ public class MessageTest {
 
 	private int count = 10000;
 	private Random gen = new Random();
-	private boolean useSocket = false;
+	private boolean useSocket = true;
 
 	public void testHeader(){
 		int n = (int) (Math.random() * count);
@@ -231,7 +231,7 @@ public class MessageTest {
 				im = new InboundMessage(om.getBytes());
 			else
 				im = testClientServer(om);
-			ArrayList<Object> c = im.readArrayList();
+			ArrayList<Object> c = (ArrayList<Object>) im.readArrayList();
 			assertTrue("Read fail", b.size() == c.size());
 			int i = 0;
 			for (Object object : c) {
@@ -260,7 +260,7 @@ public class MessageTest {
 				im = new InboundMessage(om.getBytes());
 			else
 				im = testClientServer(om);
-			HashMap<String, Object> c = im.readMap();
+			HashMap<String, Object> c = (HashMap<String, Object>) im.readMap();
 			assertTrue("Read fail", b.size() == c.size());
 			int i = 0;
 			for (Entry<String, Object> entry : c.entrySet()) {

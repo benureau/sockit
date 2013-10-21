@@ -7,7 +7,7 @@ clean:
 library: src/sockit/Server.java src/sockit/InboundMessage.java src/sockit/OutboundMessage.java src/sockit/Client.java
 	mkdir -p target; \
 	rm -Rf target/sockit/; \
-	javac src/sockit/*.java -d target/
+	javac -Xlint:unchecked src/sockit/*.java -d target/
 
 sockit.jar: library
 	mkdir -p target; \
