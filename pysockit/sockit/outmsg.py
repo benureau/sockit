@@ -65,23 +65,23 @@ class OutboundMessage(object):
 
     def _appendList(self, a):
         """ Add a string in the content of the message """
-        try:
-            self._appendHomogeneousList(a)
-        except ValueError:
-            self._appendHeterogeneousList(a)
+        self.content.append(intStruct.pack(len(a)))
+        if len(a) > 0:
+            try:
+                self._appendHomogeneousList(a)
+            except ValueError:
+                self._appendHeterogeneousList(a)
 
     def _appendHomogeneousList(self, a):
         firsttype = type(a[0])
         if not all(firsttype == type(e) for e in a):
             raise ValueError("not all type are the same")
-        self.content.append(intStruct.pack(len(a)))
         self.content.append(charStruct.pack(typedict[firsttype]))
         self.length  += intStruct.size + charStruct.size
         for e in a:
             self._append(e)
 
     def _appendHeterogeneousList(self, a):
-        self.content.append(intStruct.pack(len(a)))
         self.content.append(charStruct.pack(b'x'))
         self.length  += intStruct.size + charStruct.size
         for e in a:

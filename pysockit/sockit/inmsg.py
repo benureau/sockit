@@ -64,12 +64,15 @@ class InboundMessage(object):
     def _readList(self, *args):
         """ Reads a tuple of elements in the content of the message"""
         list_size = self._read('i')
-        type_str  = self._read('c')
-        if type_str == 'x':
-            return tuple(self.read() for _ in range(list_size))
+        if list_size == 0:
+            return ()
         else:
-            f_read = InboundMessage._readdict[type_str]
-            return tuple(f_read(self, type_str) for _ in range(list_size))
+            type_str  = self._read('c')
+            if type_str == 'x':
+                return tuple(self.read() for _ in range(list_size))
+            else:
+                f_read = InboundMessage._readdict[type_str]
+                return tuple(f_read(self, type_str) for _ in range(list_size))
 
     def _readDict(self, *args):
         """ Reads a dict with string keys"""
