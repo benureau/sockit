@@ -59,7 +59,7 @@ class InboundMessage(object):
         self.checkForOverflow(size)
         s = self.content[self.cursor:self.cursor+size]
         self.cursor  += size
-        return UTF2str(s)
+        return chars2str(s)
 
     def _readList(self, *args):
         """ Reads a tuple of elements in the content of the message"""

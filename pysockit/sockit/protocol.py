@@ -1,6 +1,7 @@
 import struct
 import types
 
+import numpy
 
 HEADER_SIZE = 8
 
@@ -15,6 +16,7 @@ doubleStruct = struct.Struct("!d")
 typedict = {bool : b'?',
             int  : b'i',
             float: b'd',
+            numpy.float64: b'd',
             str  : b's',
             list : b'T',
             tuple: b'T',
@@ -38,3 +40,9 @@ def str2UTF(s):
 
 def UTF2str(s):
     return s[2:]
+
+def str2chars(s):
+    return s.encode('utf-16')[2:]
+
+def chars2str(s):
+    return ('\xff\xfe'+s).decode('utf-16')

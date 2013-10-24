@@ -4,9 +4,9 @@ import sys, os
 import random
 
 import env
-import inmsg
-import outmsg
-import protocol
+from sockit import inmsg
+from sockit import outmsg
+from sockit import protocol
 
 num_it = 1024
 
@@ -19,7 +19,7 @@ def test_message_int():
     message = outmsg.OutboundMessage(0)
     for i in range(num_it):
         message.append(i)
-        correct_size = protocol.headerStruct.size + (i+1)*protocol.intStruct.size
+        correct_size = protocol.headerStruct.size + (i+1)*(protocol.charStruct.size + protocol.intStruct.size)
         if message.length != correct_size:
             print("Size is ", message.length, " but should be ", correct_size)
             result = False
@@ -42,12 +42,12 @@ def test_message_string():
     for i in range(num_it):
         s = str(i) + "azertyuiopqsdfghjklmwxcvbn"
         message.append(s)
-        correct_size += protocol.intStruct.size + len(s)
+        correct_size += protocol.charStruct.size + protocol.intStruct.size + 2*len(s)
         if message.length != correct_size:
             print("Size is ", message.length, " but should be ", correct_size)
             result = False
 
-    message = inmsg.InboundMessage(0, content = message.getBytes(header = False))
+    message = inmsg.InboundMessage(0, content=message.getBytes(header=False))
     for i in range(num_it):
         r = message.read()
         if r != str(i) + "azertyuiopqsdfghjklmwxcvbn":
