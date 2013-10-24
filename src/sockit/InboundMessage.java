@@ -1,7 +1,9 @@
 package sockit;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -155,7 +157,7 @@ public class InboundMessage {
      * @return the element as an Object
      * @throws IOException if the type of the element is not supported.
      */
-    private Object getNextElement() throws IOException {
+    public Object readElement() throws IOException {
         byte type = din.readByte();
         //System.out.println("type : "+type);
         MessageUtils.isTypeExist(type);
@@ -200,7 +202,12 @@ public class InboundMessage {
             break;
         case MessageUtils.STRING_TYPE:
             int size2 = din.readInt();
-            o = (Object) new String(din.readUTF());
+            int size_bytes = 2 * size2 + 2;
+			byte[] b_y = new byte[size_bytes];
+            for(int i = 0 ; i < size_bytes ; i++)
+            	b_y[i] = din.readByte();
+            o = (Object) new String(b_y, "UTF-16");
+            System.out.println("STRING OF THE DEATH : " + new String(b_y, "UTF-16"));
             break;
         case MessageUtils.LIST_TYPE:
             int size = din.readInt();
@@ -233,7 +240,7 @@ public class InboundMessage {
         HashMap<String, Object> d = new HashMap<String, Object>();
         for (int i = 0; i < size; i++) {
             String key   = (String) this.getNextElement(MessageUtils.STRING_TYPE);
-            Object value = this.getNextElement();
+            Object value = this.readElement();
             d.put(key, value);
         }
         return d;
@@ -253,7 +260,7 @@ public class InboundMessage {
         if(sub_type == MessageUtils.HETERO_TYPE){
             //System.out.println("hetero");
             for(int i = 0; i < size; i++){
-                ret.add(getNextElement());
+                ret.add(readElement());
             }
         }
         else{

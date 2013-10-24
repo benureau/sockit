@@ -42,7 +42,7 @@ def UTF2str(s):
     return s[2:]
 
 def str2chars(s):
-    return s.encode('utf-16')[2:]
+    return s.encode('utf-16')
 
 def chars2str(s):
-    return ('\xff\xfe'+s).decode('utf-16')
+    return (s).decode('utf-16')

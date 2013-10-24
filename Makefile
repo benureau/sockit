@@ -14,14 +14,3 @@ sockit.jar: library
 	cd target; \
 	jar -cf sockit.jar sockit/
 
-example: sockit.jar
-	javac src/ExampleDataStream.java -cp target/sockit.jar -d target/; \
-	cd target; java ExampleDataStream
-
-test: sockit.jar
-	javac src/Test.java -cp target/ -d target/; \
-	cd target; java Test
-
-fibserver:
-	javac pysockit/sockit/test/FibServer.java -cp target/ -d target/; \
-	cd target; java FibServer

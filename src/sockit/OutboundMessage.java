@@ -122,8 +122,8 @@ public class OutboundMessage {
 	 */
 	public void appendString(String s) throws IOException{
 		dout.writeByte(MessageUtils.STRING_TYPE);
-		dout.writeInt(s.length()+2);
-		dout.writeUTF(s);
+		dout.writeInt(s.length());
+		dout.write(s.getBytes("UTF-16"));
 		dout.flush();
 	}
 
@@ -177,7 +177,7 @@ public class OutboundMessage {
 	 * @param obj
 	 * @throws IOException
 	 */
-	private void appendElement(Object obj) throws IOException {
+	public void appendElement(Object obj) throws IOException {
 		if(obj instanceof Long)
 			this.appendLong(((Long) obj).longValue());
 		else if(obj instanceof Double)

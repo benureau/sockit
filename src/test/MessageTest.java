@@ -10,6 +10,7 @@ import java.util.Random;
 import java.util.UUID;
 
 import org.junit.Test;
+import org.junit.runner.JUnitCore;
 import org.junit.runner.RunWith;
 
 import sockit.Client;
@@ -22,7 +23,7 @@ public class MessageTest {
 
 	private int count = 10000;
 	private Random gen = new Random();
-	private boolean useSocket = true;
+	private boolean useSocket = false;
 
 	public void testHeader(){
 		int n = (int) (Math.random() * count);
@@ -247,6 +248,34 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testObjectIO() {
+		int t = gen.nextInt();
+		OutboundMessage om = new OutboundMessage();
+		om.setType(t);
+		Double d = new Double(Math.PI);
+		Integer i = new Integer(count);
+		try {
+			om.appendElement(d);
+			om.appendElement(i);
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail("IO exception");
+		}
+		InboundMessage im = new InboundMessage(om.getBytes());
+		try {
+			Object o1 = im.readElement();
+			Object o2 = im.readElement();
+			int type = im.getType();
+			assertTrue("Error type", type == t);
+			assertTrue("Error double", ((Double) o1).doubleValue() == Math.PI);
+			assertTrue("Error integer", ((Integer) o2).intValue() == count);
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail("IO exception");
+		}
+	}
+	
+	@Test
 	public void testMap() {
 		OutboundMessage om = new OutboundMessage();
 		HashMap<String, Object> b = new HashMap<String, Object>();
@@ -266,8 +295,6 @@ public class MessageTest {
 			for (Entry<String, Object> entry : c.entrySet()) {
 				//
 			}
-
-
 		} catch (IOException e) {
 			e.printStackTrace();
 			fail("IO exception");
@@ -304,5 +331,9 @@ public class MessageTest {
 		s.stop();
 		return im;
 	}
-
+	
+	public static void main(String[] args) throws Exception {                    
+	       JUnitCore.main(
+	         "test.MessageTest");            
+	}
 }
