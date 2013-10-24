@@ -59,7 +59,7 @@ class OutboundMessage(object):
     def _appendString(self, s):
         """ Add a string in the content of the message """
         utfs = str2chars(s)
-        self.content.append(intStruct.pack(len(utfs)))
+        self.content.append(intStruct.pack(len(s)))
         self.content.append(utfs)
         self.length  += intStruct.size + len(utfs)
 
