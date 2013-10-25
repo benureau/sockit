@@ -201,13 +201,11 @@ public class InboundMessage {
             o = (Object) new Long(din.readLong());
             break;
         case MessageUtils.STRING_TYPE:
-            int size2 = din.readInt();
-            int size_bytes = 2 * size2 + 2;
+            int size_bytes = din.readInt();
 			byte[] b_y = new byte[size_bytes];
             for(int i = 0 ; i < size_bytes ; i++)
             	b_y[i] = din.readByte();
             o = (Object) new String(b_y, "UTF-16");
-            System.out.println("STRING OF THE DEATH : " + new String(b_y, "UTF-16"));
             break;
         case MessageUtils.LIST_TYPE:
             int size = din.readInt();
@@ -293,8 +291,11 @@ public class InboundMessage {
                 break;
             case MessageUtils.STRING_TYPE:
                 for(int i = 0; i < size; i++){
-                	int size2 = din.readInt();
-                    ret.add((Object) new String(din.readUTF()));
+                    int size_bytes = din.readInt();
+        			byte[] b_y = new byte[size_bytes];
+                    for(int j = 0 ; j < size_bytes ; j++)
+                    	b_y[j] = din.readByte();
+                    ret.add((Object) new String(b_y, "UTF-16"));
                 }
                 break;
             case MessageUtils.LIST_TYPE:

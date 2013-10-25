@@ -94,12 +94,13 @@ public class MessageTest {
 				im = new InboundMessage(om.getBytes());
 			else
 				im = testClientServer(om);
-			for(int i = 0 ; i < count ; i ++)
-				assertTrue("Read fail", im.readString().compareTo(b.get(i)) == 0);
-
+			for(int i = 0 ; i < count ; i ++){
+				String t = im.readString();
+				assertTrue("Read fail", t.compareTo(b.get(i)) == 0);
+			}
 		} catch (IOException e) {
-			fail("IO exception");
 			e.printStackTrace();
+			fail("IO exception");
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			fail("IO exception");

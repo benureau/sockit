@@ -59,12 +59,12 @@ class OutboundMessage(object):
     def _appendString(self, s):
         """ Add a string in the content of the message """
         utfs = str2chars(s)
-        self.content.append(intStruct.pack(len(s)))
+        self.content.append(intStruct.pack(len(utfs)))
         self.content.append(utfs)
         self.length  += intStruct.size + len(utfs)
 
     def _appendList(self, a):
-        """ Add a string in the content of the message """
+        """ Add a list in the content of the message """
         self.content.append(intStruct.pack(len(a)))
         if len(a) > 0:
             try:

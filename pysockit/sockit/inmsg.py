@@ -57,8 +57,8 @@ class InboundMessage(object):
         """ Reads a string in the content of the message """
         size = self._read('i')
         self.checkForOverflow(size)
-        s = self.content[self.cursor:self.cursor+2*size]
-        self.cursor  += 2*size
+        s = self.content[self.cursor:self.cursor + size]
+        self.cursor  += size
         return chars2str(s)
 
     def _readList(self, *args):

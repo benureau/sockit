@@ -16,13 +16,9 @@ import time
 import sockit
 import signal
 import traceback
+import string
 
-zoo = [('$xz', 'n2"SqL3{', '2k3+Wb2\x7fDn!y\x0eyyA\x00c', -448146),
-    (),
-    (False, False, '_;\x00\x18N\x08%\x15KR1-\x17[_(BAd\x15', '\x1c~( &E'),
-    ('\x00\x00Ew2:', -8592670.641777493, '?.'),
-    ('\x11T\x05\x0byZk4:o\\\x00RN', 97576, -961919, -665894),
-    (-6688899.80099246, 'R\x02\x00Gi\x06)\x00sIBuI\\\x0c\x18', True, -147184, True)]
+zoo = [()]
 
 def find_port():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
@@ -61,7 +57,7 @@ def randomstruct(max_depth=3):
         return random.uniform(-10000000.0, 100000.0)
     elif dice == 3:
         length = random.randint(0, 20)
-        return ''.join(chr(random.randint(65, 90)) for _ in range(length))
+        return ''.join([random.choice(string.lowercase) for _ in range(100)])
     elif dice == 4:
         if max_depth > 0:
             length = random.randint(0, 5)
@@ -77,13 +73,13 @@ def clientTest(port):
 
     c = sockit.Client()
     b = c.connect("127.0.0.1", port)
-    count = 1000;
+    count = 10000000
     try:
         if b:
             print("CLIENT -> started")
             while count > 0:
                 print "----------------------------------"
-                st = randomstruct(1)
+                st =  randomstruct(1)
                 print st
                 if not st in zoo:
                     hello = sockit.OutboundMessage(port)
@@ -91,7 +87,7 @@ def clientTest(port):
                     rep = c.sendAndReceive(hello)
                     st_t = rep.read()
                     if st != st_t:
-                        print "MOTHER FUCKING LORDS OF GOD"
+                        raise ValueError("Answer is different than what has been sent.")
                     count -= 1
             c.disconnect()
             print("CLIENT -> stopped")

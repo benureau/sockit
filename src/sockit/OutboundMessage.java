@@ -122,7 +122,7 @@ public class OutboundMessage {
 	 */
 	public void appendString(String s) throws IOException{
 		dout.writeByte(MessageUtils.STRING_TYPE);
-		dout.writeInt(s.length());
+		dout.writeInt(s.getBytes("UTF-16").length);
 		dout.write(s.getBytes("UTF-16"));
 		dout.flush();
 	}
@@ -255,8 +255,9 @@ public class OutboundMessage {
 				break;
 			case MessageUtils.STRING_TYPE:
 				for (Object o : al){
-					dout.writeInt(((String) o).length());
-					dout.writeUTF(((String) o).toString());
+					dout.writeInt(((String) o).getBytes("UTF-16").length);
+					dout.write(((String) o).getBytes("UTF-16"));
+					dout.flush();
 				}
 				break;
 			case MessageUtils.LIST_TYPE:
