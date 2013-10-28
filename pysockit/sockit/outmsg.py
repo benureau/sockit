@@ -71,6 +71,8 @@ class OutboundMessage(object):
                 self._appendHomogeneousList(a)
             except ValueError:
                 self._appendHeterogeneousList(a)
+        else:
+            self.length += intStruct.size
 
     def _appendHomogeneousList(self, a):
         firsttype = type(a[0])

@@ -301,8 +301,12 @@ public class InboundMessage {
             case MessageUtils.LIST_TYPE:
                 for(int i = 0; i < size; i++){
                 	int sub_size = din.readInt();
-                    byte sub_sub_type = din.readByte();
-                    ret.add(this.readArrayList(sub_sub_type, sub_size));
+                	if(sub_size > 0){
+                		byte sub_sub_type = din.readByte();
+                		ret.add(this.readArrayList(sub_sub_type, sub_size));
+                	}
+                	else
+                		ret.add((Object) new ArrayList<Object>());
                 }
                 break;
             default:

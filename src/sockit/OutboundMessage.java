@@ -98,7 +98,6 @@ public class OutboundMessage {
 			content.flush();
 			return content.toByteArray();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
@@ -274,6 +273,7 @@ public class OutboundMessage {
 				throw new IOException("This type is not supported in InboundMessage class.");
 			}
 		}
+		dout.flush();
 	}
 
 
@@ -310,6 +310,7 @@ public class OutboundMessage {
 			this.appendString(key);
 			this.appendElement(value);			
 		}
+		dout.flush();
 	}
 
 	/**

@@ -18,7 +18,7 @@ import signal
 import traceback
 import string
 
-zoo = [()]
+zoo = []
 
 def find_port():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
@@ -79,7 +79,7 @@ def clientTest(port):
             print("CLIENT -> started")
             while count > 0:
                 print "----------------------------------"
-                st =  randomstruct(1)
+                st =  randomstruct(3)
                 print st
                 if not st in zoo:
                     hello = sockit.OutboundMessage(port)
