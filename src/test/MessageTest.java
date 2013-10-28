@@ -249,6 +249,56 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testEmptyList() {
+		OutboundMessage om = new OutboundMessage();
+		ArrayList<Long> b = new ArrayList<Long>();
+		try {
+			om.appendList(b);
+			InboundMessage im;
+			if(!useSocket)
+				im = new InboundMessage(om.getBytes());
+			else
+				im = testClientServer(om);
+			ArrayList<Object> c = (ArrayList<Object>) im.readArrayList();
+		} catch (IOException e) {
+			fail("IO exception");
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			fail("IO exception");
+		}
+	}
+	
+	@Test
+	public void testListOfEmptyLists() {
+		OutboundMessage om = new OutboundMessage();
+		ArrayList<ArrayList<Object>> b = new ArrayList<ArrayList<Object>>();
+		for(int i = 0 ; i < count ; i ++){
+			b.add(new ArrayList<Object>());
+		}
+		try {
+			om.appendList(b);
+			InboundMessage im;
+			if(!useSocket)
+				im = new InboundMessage(om.getBytes());
+			else
+				im = testClientServer(om);
+			ArrayList<Object> c = (ArrayList<Object>) im.readArrayList();
+			assertTrue("Read fail", b.size() == c.size());
+			int i = 0;
+			for (Object object : c) {
+				assertTrue("Read fail", ((ArrayList<Object>) object).size() == b.get(i++).size());
+			}
+		} catch (IOException e) {
+			fail("IO exception");
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			fail("IO exception");
+		}
+	}
+	
+	@Test
 	public void testObjectIO() {
 		int t = gen.nextInt();
 		OutboundMessage om = new OutboundMessage();

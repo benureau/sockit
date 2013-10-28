@@ -20,7 +20,6 @@ public class ServerTest {
 		while(run_server){
 			if(s.getNumberOfMessages() > 0){
 				InboundMessage im = s.receive();
-				System.out.println("Reading a message...");
 				OutboundMessage om = new OutboundMessage();
 				om.setType(im.getType());
 				boolean run = true;

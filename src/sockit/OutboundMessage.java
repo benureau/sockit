@@ -3,6 +3,7 @@ package sockit;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -91,7 +92,7 @@ public class OutboundMessage {
 
 	/**
 	 * Returns the content of the message as a byte array
-	 * @return
+	 * @return the content as a byte array
 	 */
 	private byte[] getContentAsByteArray(){
 		try {
@@ -110,6 +111,15 @@ public class OutboundMessage {
 	 */
 	public void appendBoolean(Boolean b) throws IOException{
 		dout.writeByte(MessageUtils.BOOL_TYPE);
+		writeBoolean(b);
+	}
+
+	/**
+	 * Writes a boolean in the content without writing the type
+	 * @param b the boolean to append
+	 * @throws IOException
+	 */
+	private void writeBoolean(Boolean b) throws IOException {
 		dout.writeBoolean(b);
 		dout.flush();
 	}
@@ -121,6 +131,17 @@ public class OutboundMessage {
 	 */
 	public void appendString(String s) throws IOException{
 		dout.writeByte(MessageUtils.STRING_TYPE);
+		writeString(s);
+	}
+	
+	/**
+	 * Writes a string in the content without writing the type
+	 * @param s the string to append
+	 * @throws IOException
+	 * @throws UnsupportedEncodingException
+	 */
+	private void writeString(String s) throws IOException,
+			UnsupportedEncodingException {
 		dout.writeInt(s.getBytes("UTF-16").length);
 		dout.write(s.getBytes("UTF-16"));
 		dout.flush();
@@ -133,6 +154,15 @@ public class OutboundMessage {
 	 */
 	public void appendDouble(double d) throws IOException{
 		dout.writeByte(MessageUtils.DOUBLE_TYPE);
+		writeDouble(d);
+	}
+
+	/**
+	 * Writes a double in the content without writing the type
+	 * @param d the double to append
+	 * @throws IOException
+	 */
+	private void writeDouble(double d) throws IOException {
 		dout.writeDouble(d);
 		dout.flush();
 	}
@@ -144,6 +174,15 @@ public class OutboundMessage {
 	 */
 	public void appendFloat(float f) throws IOException{
 		dout.writeByte(MessageUtils.FLOAT_TYPE);
+		writeFloat(f);
+	}
+
+	/**
+	 * Writes a float in the content without writing the type
+	 * @param f the float to append
+	 * @throws IOException
+	 */
+	private void writeFloat(float f) throws IOException {
 		dout.writeFloat(f);
 		dout.flush();
 	}
@@ -155,6 +194,15 @@ public class OutboundMessage {
 	 */
 	public void appendInt(int i) throws IOException{
 		dout.writeByte(MessageUtils.INT_TYPE);
+		writeInt(i);
+	}
+
+	/**
+	 * Writes a int in the content without writing the type
+	 * @param i the int to append
+	 * @throws IOException
+	 */
+	private void writeInt(int i) throws IOException {
 		dout.writeInt(i);
 		dout.flush();
 	}
@@ -166,14 +214,23 @@ public class OutboundMessage {
 	 */
 	public void appendLong(long l) throws IOException{
 		dout.writeByte(MessageUtils.LONG_TYPE);
+		writeLong(l);
+	}
+
+	/**
+	 * Writes a long in the content without writing the type
+	 * @param l the long to append
+	 * @throws IOException
+	 */
+	private void writeLong(long l) throws IOException {
 		dout.writeLong(l);
 		dout.flush();
 	}
 
 
 	/**
-	 * 
-	 * @param obj
+	 * Write an element in the content of the message
+	 * @param obj the object to append
 	 * @throws IOException
 	 */
 	public void appendElement(Object obj) throws IOException {
@@ -209,8 +266,8 @@ public class OutboundMessage {
 	}
 
 	/**
-	 * 
-	 * @param al
+	 * Used to appends a list without writing it is a list
+	 * @param al the list to append
 	 * @throws IOException
 	 */
 	private void appendListUntyped(List<?> al) throws IOException {
@@ -229,34 +286,32 @@ public class OutboundMessage {
 			switch (type) {
 			case MessageUtils.BOOL_TYPE:
 				for (Object o : al){
-					dout.writeBoolean(((Boolean) o).booleanValue());
+					this.writeBoolean(((Boolean) o).booleanValue());
 				}
 				break;
 			case MessageUtils.DOUBLE_TYPE:
 				for (Object o : al){
-					dout.writeDouble(((Double) o).doubleValue());
+					this.writeDouble(((Double) o).doubleValue());
 				}
 				break;
 			case MessageUtils.FLOAT_TYPE:
 				for (Object o : al){
-					dout.writeFloat(((Float) o).floatValue());;
+					this.writeFloat(((Float) o).floatValue());;
 				}
 				break;
 			case MessageUtils.INT_TYPE:
 				for (Object o : al){
-					dout.writeInt(((Integer) o).intValue());
+					this.writeInt(((Integer) o).intValue());
 				}
 				break;
 			case MessageUtils.LONG_TYPE:
 				for (Object o : al){
-					dout.writeLong(((Long) o).longValue());
+					this.writeLong(((Long) o).longValue());
 				}
 				break;
 			case MessageUtils.STRING_TYPE:
 				for (Object o : al){
-					dout.writeInt(((String) o).getBytes("UTF-16").length);
-					dout.write(((String) o).getBytes("UTF-16"));
-					dout.flush();
+					this.writeString((String) o);
 				}
 				break;
 			case MessageUtils.LIST_TYPE:
@@ -297,8 +352,8 @@ public class OutboundMessage {
 	}
 
 	/**
-	 * 
-	 * @param map
+	 * Appends a map (dict) in the content of the message
+	 * @param map the map to append
 	 * @throws IOException
 	 */
 	public void appendMap(Map<?, ?> map) throws IOException{
@@ -314,10 +369,12 @@ public class OutboundMessage {
 	}
 
 	/**
-	 * 
-	 * @return
+	 * Returns the length of the message
+	 * @return the length of the message
+	 * @throws IOException 
 	 */
-	public int getLength() {
+	public int getLength() throws IOException {
+		dout.flush();
 		return OutboundMessage.HEADER_SIZE + dout.size();
 	}
 }
