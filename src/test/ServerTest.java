@@ -12,10 +12,10 @@ public class ServerTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String port = args[0];
+		//String port = args[0];
 		Server s = new Server();
-		int _port = Integer.parseInt(port);
-		s.start(_port);
+		//int _port = Integer.parseInt(port);
+		s.start(1234);
 		boolean run_server = true;
 		while(run_server){
 			if(s.getNumberOfMessages() > 0){
