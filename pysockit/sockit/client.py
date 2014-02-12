@@ -1,6 +1,5 @@
 """
 Python port of the Java Client class.
-Contrary to the later, not yet thread-safe.
 """
 
 import sys
@@ -8,6 +7,7 @@ import socket
 import traceback
 import struct
 import select
+import threading
 
 from . import inmsg
 
@@ -24,6 +24,8 @@ class Client(object):
         self.socketLock = None
 
         self.debug = debug
+        
+        self.lock = threading.Lock()
 
     def checkIP(self, ip):
         """ Checks if an string is an IPv4 address or not
@@ -47,10 +49,10 @@ class Client(object):
             :arg port: the port where to connect
             :return:  True if connection is ok, False otherwise
         """
-        #FIXME socketLock lock
+        self.lock.acquire()
         b = self.unprotectedConnect(ip, port)
-        #FIXME socketLock unlock
-        self.port = self.socket.getsockname()[1]
+        self.lock.release()
+        #self.port = self.socket.getsockname()[1]
         return b
 
     def reConnect(self):
@@ -67,9 +69,9 @@ class Client(object):
 
             :return:  True if disconnect ok, False otherwise (i think it couldn't append)
         """
-        #FIXME socketLock lock
+        self.lock.acquire()
         b = self.unprotectedDisconnect()
-        #FIXME socketLock unlock
+        self.lock.release()
         return b
 
     def send(self, message):
@@ -78,11 +80,11 @@ class Client(object):
             :arg message: the message to send
             :return:      True if the message is sent, False otherwise. If an error occurs during, the socket will be closed.
         """
-        #FIXME socketLock lock
+        self.lock.acquire()
         ret = self.unprotectedSend(message)
         if not ret:
             self.unprotectedDisconnect()
-        #FIXME socketLock unlock
+        self.lock.release()
         return ret
 
     def sendAndReceive(self, message, timeout = 100):
@@ -92,10 +94,10 @@ class Client(object):
             :return:  the answer message received
         """
         answer = None
-        #FIXME socketLock lock
+        self.lock.acquire()
         if self.unprotectedSend(message):
             answer = self.unprotectedReceive(timeout)
-        #FIXME socketLock unlock
+        self.lock.release()
         return answer
 
     def receive(self, timeout = float('inf')):

@@ -9,7 +9,7 @@ headerStruct = struct.Struct("!ii")
 boolStruct   = struct.Struct("!?")
 charStruct   = struct.Struct("!c")
 intStruct    = struct.Struct("!i")
-longStruct   = struct.Struct("!l")
+longStruct   = struct.Struct("!Q")
 floatStruct  = struct.Struct("!f")
 doubleStruct = struct.Struct("!d")
 
@@ -17,6 +17,7 @@ typedict = {bool : b'?',
             int  : b'i',
             float: b'd',
             numpy.float64: b'd',
+            long : b'l',
             str  : b's',
             list : b'T',
             tuple: b'T',
