@@ -3,7 +3,6 @@ package test;
 import java.util.ArrayList;
 
 import sockit.InboundMessage;
-import sockit.OutboundMessage;
 import sockit.Server;
 
 public class ServerTest {
